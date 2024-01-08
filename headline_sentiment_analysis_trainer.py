@@ -31,8 +31,8 @@ def map_labels(row):
 
 def compute_metrics(eval_pred):
     print(eval_pred)
-    load_accuracy = load_metric("accuracy")
-    load_f1 = load_metric("f1")
+    load_accuracy = load_metric("accuracy", trust_remote_code=True)
+    load_f1 = load_metric("f1", trust_remote_code=True)
 
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
@@ -79,7 +79,7 @@ def main():
        compute_metrics=compute_metrics
     )
     trainer.train()
-    trainer.evaluate()
+    print(trainer.evaluate())
 
 
 if __name__ == '__main__':
