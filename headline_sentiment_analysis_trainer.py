@@ -1,4 +1,5 @@
 """Trainer for seaweed headline sentiment analysis."""
+import matplotlib.pyplot as plt
 import pandas
 from transformers import AutoTokenizer
 from sklearn.model_selection import train_test_split
@@ -22,6 +23,30 @@ DATA_COLLATOR = DataCollatorWithPadding(tokenizer=TOKENIZER)
 
 MODEL = AutoModelForSequenceClassification.from_pretrained(
     "distilbert-base-uncased", num_labels=3)
+
+
+def plot_learning_curves(trainer):
+    # Extract training and validation loss
+    training_loss = [entry['loss'] for entry in trainer.state.log_history if 'loss' in entry]
+    validation_loss = [entry['eval_loss'] for entry in trainer.state.log_history if 'eval_loss' in entry]
+
+    # Create a figure and a set of subplots
+    fig, ax = plt.subplots()
+
+    # Plot training and validation loss
+    ax.plot(training_loss, label='Training loss')
+    ax.plot(validation_loss, label='Validation loss')
+
+    # Add title and labels
+    ax.set_title('Training and Validation Loss')
+    ax.set_xlabel('Epochs')
+    ax.set_ylabel('Loss')
+
+    # Add legend
+    ax.legend()
+
+    # Show the plot
+    plt.show()
 
 
 def map_labels(row):
@@ -80,6 +105,7 @@ def main():
     )
     trainer.train()
     print(trainer.evaluate())
+    plot_learning_curves(trainer)
 
 
 if __name__ == '__main__':
