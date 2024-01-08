@@ -1,4 +1,6 @@
 """Trainer for seaweed headline sentiment analysis."""
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas
 from transformers import AutoTokenizer
@@ -54,6 +56,10 @@ def map_labels(row):
     return label_dict[row['sentiment']]
 
 
+def preprocess_function(examples):
+    return TOKENIZER(examples["headline"], truncation=True)
+
+
 def compute_metrics(eval_pred):
     print(eval_pred)
     load_accuracy = load_metric("accuracy", trust_remote_code=True)
@@ -64,10 +70,6 @@ def compute_metrics(eval_pred):
     accuracy = load_accuracy.compute(predictions=predictions, references=labels)["accuracy"]
     f1 = load_f1.compute(predictions=predictions, references=labels, average='weighted')["f1"]
     return {"accuracy": accuracy, "f1": f1}
-
-
-def preprocess_function(examples):
-    return TOKENIZER(examples["headline"], truncation=True)
 
 
 def main():
@@ -88,7 +90,7 @@ def main():
        learning_rate=2e-5,
        per_device_train_batch_size=16,
        per_device_eval_batch_size=16,
-       num_train_epochs=20,
+       num_train_epochs=2,
        weight_decay=0.01,
        save_strategy="epoch",
        push_to_hub=True
@@ -105,7 +107,23 @@ def main():
     )
     trainer.train()
     print(trainer.evaluate())
-    plot_learning_curves(trainer)
+    # Make predictions on the test dataset
+    predictions = trainer.predict(tokenized_test)
+    predicted_labels = np.argmax(predictions.predictions, axis=-1)
+
+    # True labels
+    true_labels = predictions.label_ids
+
+    # Generate the confusion matrix
+    cm = confusion_matrix(true_labels, predicted_labels)
+
+    # Plot the confusion matrix
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(cm, annot=True, fmt='g', cmap='Blues')
+    plt.xlabel('Predicted labels')
+    plt.ylabel('True labels')
+    plt.title('Confusion Matrix')
+    plt.show()
 
 
 if __name__ == '__main__':
