@@ -19,7 +19,7 @@ with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
     login(access_token_write, write_permission=True)
 
 # 'distilbert-base-uncased'
-MODEL_ID = 'bert-large-uncased'
+MODEL_ID = 'bert-base-uncased'
 
 TOKENIZER = AutoTokenizer.from_pretrained(
     MODEL_ID, token=access_token_write)
