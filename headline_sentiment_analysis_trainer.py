@@ -18,13 +18,15 @@ with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
     access_token_write = file.readline().strip()
     login(access_token_write, write_permission=True)
 
+# 'distilbert-base-uncased'
+MODEL_ID = 'bert-large-uncased'
+
 TOKENIZER = AutoTokenizer.from_pretrained(
-    "distilbert-base-uncased", token=access_token_write)
+    MODEL_ID, token=access_token_write)
 DATA_COLLATOR = DataCollatorWithPadding(tokenizer=TOKENIZER)
 
-
 MODEL = AutoModelForSequenceClassification.from_pretrained(
-    "distilbert-base-uncased", num_labels=3)
+    MODEL_ID, num_labels=3)
 
 
 def plot_learning_curves(trainer):
