@@ -19,8 +19,8 @@ with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
     login(access_token_write, write_permission=True)
 
 # 'distilbert-base-uncased'
-MODEL_ID = 'bert-base-uncased'
-
+#MODEL_ID = 'bert-base-uncased'  # 0.79 accuracy in 2 epochs
+MODEL_ID = 't5-large'
 TOKENIZER = AutoTokenizer.from_pretrained(
     MODEL_ID, token=access_token_write)
 DATA_COLLATOR = DataCollatorWithPadding(tokenizer=TOKENIZER)
