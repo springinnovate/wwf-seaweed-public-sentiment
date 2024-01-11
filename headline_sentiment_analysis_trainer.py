@@ -148,7 +148,7 @@ def main():
 
         tokenized_train = dataset['train'].map(
             _make_preprocess_function(tokenizer), batched=True)
-        print(tokenized_train)
+        print(tokenized_train['token_type_ids'])
         return
         tokenized_test = dataset['test'].map(
             _make_preprocess_function(tokenizer), batched=True)
