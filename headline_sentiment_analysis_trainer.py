@@ -18,7 +18,7 @@ with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
     access_token_write = file.readline().strip()
     login(access_token_write, write_permission=True)
 
-MODEL_ID = 'distilbert-base-uncased'
+MODEL_ID = 'distilbert-base-uncased' # 0.7326315789473684 accuracy in 2 epochs
 #MODEL_ID = 'bert-base-uncased'  # 0.79 accuracy in 2 epochs
 #MODEL_ID = 'roberta-base'  # 0.7789473684210526 accuracy in 2 epochs
 TOKENIZER = AutoTokenizer.from_pretrained(
