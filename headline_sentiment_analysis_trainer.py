@@ -110,26 +110,36 @@ def main():
        save_strategy="epoch",
        push_to_hub=False
     )
-    trainer = Trainer(
-       model=MODEL,
-       args=training_args,
-       train_dataset=tokenized_train,
-       eval_dataset=tokenized_test,
-       tokenizer=TOKENIZER,
-       data_collator=DATA_COLLATOR,
-       compute_metrics=compute_metrics,
-       optimizers=(optimizer, lr_scheduler)
-    )
-    last_loss = None
-    for epoch in range(MAX_EPOCHS):
-        trainer.train()
-        eval_results = trainer.evaluate()
-        print(eval_results)
-        if last_loss is not None and (last_loss < eval_results['eval_loss']):
-            break
-        last_loss = eval_results['eval_loss']
-        trainer.save_model(f"{repo_name}/model_epoch_{epoch+1}")
 
+    model_performance = open('modelperform.csv', 'w')
+    for model_id in [
+            'bert-base-uncased', 'roberta-base',
+            'google/electra-base-generator', 'microsoft/deberta-v3-base',
+            'albert-base-v2']:
+        model_performance.write(f'\n{model_id}\n')
+        model_performance.write('eval_loss,eval_accuracy\n')
+        trainer = Trainer(
+           model=model_id,
+           args=training_args,
+           train_dataset=tokenized_train,
+           eval_dataset=tokenized_test,
+           tokenizer=TOKENIZER,
+           data_collator=DATA_COLLATOR,
+           compute_metrics=compute_metrics,
+           optimizers=(optimizer, lr_scheduler)
+        )
+        last_loss = None
+        for epoch in range(MAX_EPOCHS):
+            trainer.train()
+            eval_results = trainer.evaluate()
+            model_performance.write(
+                f"{eval_results['eval_loss'],eval_results['eval_accuracy']}\n")
+            print(eval_results)
+            if last_loss is not None and (last_loss < eval_results['eval_loss']):
+                break
+            last_loss = eval_results['eval_loss']
+            trainer.save_model(f"{repo_name}/model_epoch_{epoch+1}")
+    return
     # Make predictions on the test dataset
     predictions = trainer.predict(tokenized_test)
     predicted_labels = np.argmax(predictions.predictions, axis=-1)
