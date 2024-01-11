@@ -1,5 +1,6 @@
 """Trainer for seaweed headline sentiment analysis."""
 import argparse
+import collections
 import os
 
 from datasets import Dataset
@@ -113,15 +114,24 @@ def test_model(dataset, checkpoint_path_list):
                 logits = outputs.logits
                 preds = torch.argmax(logits, dim=1)
                 predictions.extend(preds.cpu().numpy())
+                break
 
         with open(f'{os.path.splitext(os.path.basename(checkpoint_path))[0]}_results.csv', 'w') as table:
             table.write('headline,sentiment,modeled sentiment\n')
-            for headline, expected_label, actual_label in zip(
+            confusion_matrix = collections.defaultdict(lambda: collections.defaultdict(int))
+            for headline, expected_id, actual_id in zip(
                     dataset['headline'], dataset['labels'], predictions):
+                expected_label = map_label_to_word(expected_id)
+                actual_label = map_label_to_word(actual_id)
+                confusion_matrix[expected_label][actual_label] += 1
                 table.write(
-                    f'{headline},'
-                    f'{map_label_to_word(expected_label)},'
-                    f'{map_label_to_word(actual_label)}\n')
+                    f'"{headline}",'
+                    f'{expected_label},'
+                    f'{actual_label}\n')
+            table.write('\n')
+            table.write(','.join(confusion_matrix) + '\n')
+            for label in confusion_matrix:
+                table.write(f'{label},' + ','.join(confusion_matrix[label][l] for l in confusion_matrix) + '\n')
 
         print(f'{checkpoint_path} done')
 
