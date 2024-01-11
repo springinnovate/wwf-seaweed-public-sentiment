@@ -147,6 +147,10 @@ def main():
         tokenizer = AutoTokenizer.from_pretrained(
             model_id, token=access_token_write)
 
+        for text in df['headline']:
+            tokens = tokenizer.encode(text, add_special_tokens=True)
+            print(tokens)
+        return
         tokenized_train = dataset['train'].map(
             _make_preprocess_function(tokenizer), batched=True)
         print(tokenized_train['token_type_ids'])
