@@ -128,7 +128,7 @@ def test_model(dataset, checkpoint_path_list):
                     f'{expected_label},'
                     f'{actual_label}\n')
             table.write('\n')
-            table.write(',' + ','.join(confusion_matrix) + 'accuracy\n')
+            table.write(',' + ','.join(confusion_matrix) + ',accuracy\n')
             for label in confusion_matrix:
                 table.write(f'{label},' + ','.join(str(confusion_matrix[label][l]) for l in confusion_matrix))
                 total_sum = sum(confusion_matrix[label].values())
@@ -150,6 +150,7 @@ def main():
     df = pandas.read_csv('data/papers/froelich_headlines.csv')
     df['labels'] = df.apply(map_labels, axis=1)
     headline_dataset = Dataset.from_pandas(df)
+    print(headline_dataset)
     if args.test_only:
         test_model(headline_dataset, args.model_checkpoint_paths)
         return
