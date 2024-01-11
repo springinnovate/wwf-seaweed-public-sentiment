@@ -55,8 +55,6 @@ def map_labels(row):
     return label_dict[row['sentiment']]
 
 
-def preprocess_function(examples):
-    return TOKENIZER(examples["headline"], truncation=True)
 
 
 def compute_metrics(eval_pred):
@@ -79,8 +77,6 @@ def main():
     headline_dataset = Dataset.from_pandas(df)
     dataset = headline_dataset.train_test_split(test_size=0.2)
     print(dataset)
-    tokenized_train = dataset['train'].map(preprocess_function, batched=True)
-    tokenized_test = dataset['test'].map(preprocess_function, batched=True)
 
     repo_name = "wwf-seaweed-headline-sentiment"
 
@@ -102,6 +98,12 @@ def main():
             'albert-base-v2']:
         tokenizer = AutoTokenizer.from_pretrained(
             model_id, token=access_token_write)
+
+        def preprocess_function(examples):
+            return tokenizer(examples["headline"], truncation=True)
+
+        tokenized_train = dataset['train'].map(preprocess_function, batched=True)
+        tokenized_test = dataset['test'].map(preprocess_function, batched=True)
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
         model = AutoModelForSequenceClassification.from_pretrained(
