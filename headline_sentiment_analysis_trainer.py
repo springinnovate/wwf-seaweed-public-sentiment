@@ -73,6 +73,7 @@ def compute_metrics(eval_pred):
 
 def _make_preprocess_function(tokenizer):
     def _preprocess_function(examples):
+        return tokenizer(examples["headline"], truncation=True)
         return tokenizer(examples["headline"], truncation=True, padding='max_length', max_length=512)
     return _preprocess_function
 
