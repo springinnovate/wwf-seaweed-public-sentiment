@@ -81,7 +81,8 @@ def _make_preprocess_function(tokenizer):
 
 def test_model(dataset, checkpoint_path_list):
     # Replace this with the actual path to your saved model checkpoint
-    print(dataset)
+    print(dataset['sentiment'])
+    print(dataset['labels'])
     return
     for checkpoint_path in checkpoint_path_list:
         model = AutoModelForSequenceClassification.from_pretrained(
