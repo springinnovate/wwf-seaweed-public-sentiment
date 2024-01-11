@@ -135,7 +135,7 @@ def main():
             trainer.train()
             eval_results = trainer.evaluate()
             model_performance.write(
-                f"{eval_results['eval_loss'],eval_results['eval_accuracy']}\n")
+                f"{eval_results['eval_loss']},{eval_results['eval_accuracy']}\n")
             model_performance.flush()
             print(eval_results)
             if last_loss is not None and (last_loss < eval_results['eval_loss']):
