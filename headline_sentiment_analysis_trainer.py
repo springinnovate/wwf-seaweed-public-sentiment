@@ -25,7 +25,6 @@ MODELS_TO_TEST = [
     #'bert-base-uncased',
     #'roberta-base',
     #'google/electra-base-generator',
-    #'microsoft/deberta-v3-large',
     'microsoft/deberta-v3-base',
     #'albert-base-v2',
     ]
@@ -84,7 +83,7 @@ def test_model(df, checkpoint_path_list):
 
         tokenized_df = df.map(preprocess_function, batched=True)
         result = model.predict(tokenized_df)
-
+        print(f'{checkpoint_path}\n{result}')
 
 
 def main():
@@ -140,7 +139,7 @@ def main():
             scale_parameter=True,
             relative_step=True,
             warmup_init=True,
-            lr=1e-6
+            lr=None
         )
         lr_scheduler = AdafactorSchedule(optimizer)
 
@@ -172,6 +171,7 @@ def main():
             else:
                 increase_loss_count = 0
                 lowest_loss = eval_results['eval_loss']
+            lowest_loss = eval_results['eval_loss']
             trainer.save_model(f"{repo_name}/{model_id.replace('/','-')}_{epoch+1}")
     model_performance.close()
     return
