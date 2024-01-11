@@ -82,7 +82,6 @@ def test_model(df, checkpoint_path_list):
             return tokenizer(examples["headline"], truncation=True)
 
         tokenized_df = df.map(preprocess_function, batched=True)
-        help(model)
         result = model(tokenized_df)
         print(f'{checkpoint_path}\n{result}')
 
