@@ -96,6 +96,8 @@ def test_model(dataset, checkpoint_path_list):
         tokenizer = AutoTokenizer.from_pretrained(checkpoint_path)
 
         tokenized_dataset = dataset.map(_make_preprocess_function(tokenizer), batched=True)
+        print(tokenized_dataset)
+        sys.exit()
 
         # Convert to PyTorch tensors and create a DataLoader
         tokenized_dataset.set_format('torch', columns=['input_ids', 'attention_mask', 'labels'])
@@ -114,6 +116,7 @@ def test_model(dataset, checkpoint_path_list):
                 logits = outputs.logits
                 preds = torch.argmax(logits, dim=1)
                 predictions.extend(preds.cpu().numpy())
+        print(len(predictions))
 
         with open(f'{os.path.splitext(os.path.basename(checkpoint_path))[0]}_results.csv', 'w') as table:
             table.write('headline,sentiment,modeled sentiment\n')
@@ -151,6 +154,7 @@ def main():
     df['labels'] = df.apply(map_labels, axis=1)
     headline_dataset = Dataset.from_pandas(df)
     print(headline_dataset)
+    return
     if args.test_only:
         test_model(headline_dataset, args.model_checkpoint_paths)
         return
