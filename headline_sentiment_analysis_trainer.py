@@ -126,6 +126,7 @@ def test_model(dataset, checkpoint_path_list):
                 expected_label = map_label_to_word(expected_id)
                 actual_label = map_label_to_word(actual_id)
                 confusion_matrix[expected_label][actual_label] += 1
+                headline = headline.replace('"', '')
                 table.write(
                     f'"{headline}",'
                     f'{expected_label},'
