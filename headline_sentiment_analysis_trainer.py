@@ -1,30 +1,32 @@
 """Trainer for seaweed headline sentiment analysis."""
-from sklearn.metrics import confusion_matrix
-import seaborn as sns
-import matplotlib.pyplot as plt
-import pandas
-from transformers import AutoTokenizer
-from sklearn.model_selection import train_test_split
+import argparse
+
 from datasets import Dataset
-from transformers import DataCollatorWithPadding
-from transformers import AutoModelForSequenceClassification
-import numpy as np
 from datasets import load_metric
 from huggingface_hub import login
-from transformers import TrainingArguments, Trainer
+from sklearn.metrics import confusion_matrix
 from transformers import Adafactor
+from transformers import AutoModelForSequenceClassification
+from transformers import BertFroSequenceClassification
+from transformers import AutoTokenizer
+from transformers import DataCollatorWithPadding
+from transformers import TrainingArguments, Trainer
 from transformers.optimization import AdafactorSchedule
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas
+import seaborn as sns
 
 
 with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
     access_token_write = file.readline().strip()
     login(access_token_write, write_permission=True)
 
-MODEL_ID = 'bert-base-uncased'  # 0.854 after 5 epochs then loss starts to increase agasin
-#MODEL_ID = 'roberta-base'  # 0.821 after 4 epochs then loss incrases
-#MODEL_ID = 'google/electra-base-generator' # got up to 0.806 beffore loss increases again
-#MODEL_ID = 'microsoft/deberta-v3-base'  # .865 after 6 epoch
-#MODEL_ID = 'albert-base-v2' # 0.844 after 6 with no significant further improvement
+MODELS_TO_TEST = [
+    'bert-base-uncased', 'roberta-base',
+    'google/electra-base-generator', 'microsoft/deberta-v3-base',
+    'albert-base-v2']
+
 
 def plot_learning_curves(trainer):
     # Extract training and validation loss
@@ -55,8 +57,6 @@ def map_labels(row):
     return label_dict[row['sentiment']]
 
 
-
-
 def compute_metrics(eval_pred):
     print(eval_pred)
     load_accuracy = load_metric("accuracy", trust_remote_code=True)
@@ -69,12 +69,38 @@ def compute_metrics(eval_pred):
     return {"accuracy": accuracy, "f1": f1}
 
 
+def test_model(df, checkpoint_path_list):
+    # Replace this with the actual path to your saved model checkpoint
+    for checkpoint_path in checkpoint_path_list:
+        model = AutoModelForSequenceClassification.from_pretrained(
+            checkpoint_path, num_labels=3)
+        tokenizer = AutoTokenizer.from_pretrained(checkpoint_path)
+
+        def preprocess_function(examples):
+            return tokenizer(examples["headline"], truncation=True)
+
+        tokenized_df = df.map(preprocess_function, batched=True)
+        result = model.predict(tokenized_df)
+
+
+
 def main():
     """Entry point."""
+    parser = argparse.ArgumentParser(description='WWF Seaweed Headline Sentiment Analysis')
+    parser.add_argument(
+        '--test_only', action='store_true',
+        help='Ignore offshore mangrove and saltmarsh')
+    parser.add_argument(
+        '--model_checkpoint_paths', nargs='+', help='If test only, which model to test.')
+    args = parser.parse_args()
 
     df = pandas.read_csv('data/papers/froelich_headlines.csv')
     df['labels'] = df.apply(map_labels, axis=1)
     headline_dataset = Dataset.from_pandas(df)
+    if args.test_only:
+        test_model(headline_dataset, args.model_checkpoint_paths)
+        return
+
     dataset = headline_dataset.train_test_split(test_size=0.2)
     print(dataset)
 
@@ -82,7 +108,6 @@ def main():
 
     training_args = TrainingArguments(
        output_dir=repo_name,
-       #learning_rate=2e-5,
        per_device_train_batch_size=16,
        per_device_eval_batch_size=16,
        num_train_epochs=1,
@@ -92,18 +117,17 @@ def main():
     )
 
     model_performance = open('modelperform.csv', 'w')
-    for model_id in [
-            'bert-base-uncased', 'roberta-base',
-            'google/electra-base-generator', 'microsoft/deberta-v3-base',
-            'albert-base-v2']:
+    for model_id in MODELS_TO_TEST:
         tokenizer = AutoTokenizer.from_pretrained(
             model_id, token=access_token_write)
 
         def preprocess_function(examples):
             return tokenizer(examples["headline"], truncation=True)
 
-        tokenized_train = dataset['train'].map(preprocess_function, batched=True)
-        tokenized_test = dataset['test'].map(preprocess_function, batched=True)
+        tokenized_train = dataset['train'].map(
+            preprocess_function, batched=True)
+        tokenized_test = dataset['test'].map(
+            preprocess_function, batched=True)
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
         model = AutoModelForSequenceClassification.from_pretrained(
@@ -113,7 +137,7 @@ def main():
             scale_parameter=True,
             relative_step=True,
             warmup_init=True,
-            lr=None  # This can be set to a specific learning rate or left as None
+            lr=None
         )
         lr_scheduler = AdafactorSchedule(optimizer)
 
