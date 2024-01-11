@@ -150,9 +150,9 @@ def main():
         for text in df['headline']:
             tokens = tokenizer.encode(text, add_special_tokens=True)
             print(tokens)
-        return
         tokenized_train = dataset['train'].map(
             _make_preprocess_function(tokenizer), batched=True)
+        print(tokenized_train)
         print(tokenized_train['token_type_ids'])
         return
         tokenized_test = dataset['test'].map(
