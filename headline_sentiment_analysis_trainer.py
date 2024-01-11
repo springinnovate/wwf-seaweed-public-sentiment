@@ -7,7 +7,6 @@ from huggingface_hub import login
 from sklearn.metrics import confusion_matrix
 from transformers import Adafactor
 from transformers import AutoModelForSequenceClassification
-from transformers import BertFroSequenceClassification
 from transformers import AutoTokenizer
 from transformers import DataCollatorWithPadding
 from transformers import TrainingArguments, Trainer
