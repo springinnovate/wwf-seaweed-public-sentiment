@@ -120,6 +120,7 @@ def main():
 
     model_performance = open('modelperform.csv', 'w')
     for model_id in MODELS_TO_TEST:
+        print(f'TRAINING ON: {model_id}')
         tokenizer = AutoTokenizer.from_pretrained(
             model_id, token=access_token_write)
 
