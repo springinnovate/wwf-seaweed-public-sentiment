@@ -81,7 +81,7 @@ def test_model(dataset, checkpoint_path_list):
         tokenizer = AutoTokenizer.from_pretrained(checkpoint_path)
 
         def preprocess_function(examples):
-            return tokenizer(examples["headline"], truncation=True)
+            return tokenizer(examples["headline"], truncation=True, padding='max_length', max_length=512)
 
         tokenized_dataset = dataset.map(preprocess_function, batched=True)
 
