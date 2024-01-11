@@ -78,7 +78,7 @@ def test_model(dataset, checkpoint_path_list):
     for checkpoint_path in checkpoint_path_list:
         model = AutoModelForSequenceClassification.from_pretrained(
             checkpoint_path, num_labels=3)
-        tokenizer = AutoTokenizer.from_pretrained(checkpoint_path, padding=True, max_length=512)
+        tokenizer = AutoTokenizer.from_pretrained(checkpoint_path)
 
         def preprocess_function(examples):
             return tokenizer(examples["headline"], truncation=True)
