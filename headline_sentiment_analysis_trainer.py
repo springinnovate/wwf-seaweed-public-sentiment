@@ -74,8 +74,8 @@ def compute_metrics(eval_pred):
 
 def _make_preprocess_function(tokenizer):
     def _preprocess_function(examples):
-        return tokenizer(examples["headline"], truncation=True)
-        return tokenizer(examples["headline"], truncation=True, padding='max_length', max_length=512)
+        #return tokenizer(examples["headline"], truncation=True)
+        return tokenizer(examples["headline"], truncation=True, padding='max_length', max_length=50)
     return _preprocess_function
 
 
@@ -153,15 +153,6 @@ def main():
             print(tokens)
         tokenized_train = dataset['train'].map(
             _make_preprocess_function(tokenizer), batched=True)
-        print(tokenized_train)
-        print(tokenized_train['token_type_ids'])
-        print(tokenized_train['attention_mask'])
-        print(tokenized_train['input_ids'])
-        plt.hist([len(x) for x in tokenized_train['input_ids']], bins=50)
-        plt.xlabel('Token count')
-        plt.ylabel('Number of texts')
-        plt.show()
-        return
         tokenized_test = dataset['test'].map(
             _make_preprocess_function(tokenizer), batched=True)
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
