@@ -96,9 +96,7 @@ def test_model(dataset, checkpoint_path_list):
         tokenizer = AutoTokenizer.from_pretrained(checkpoint_path)
 
         tokenized_dataset = dataset.map(_make_preprocess_function(tokenizer), batched=True)
-        print(tokenized_dataset)
-        sys.exit()
-
+        print(len(tokenized_dataset))
         # Convert to PyTorch tensors and create a DataLoader
         tokenized_dataset.set_format('torch', columns=['input_ids', 'attention_mask', 'labels'])
         dataloader = DataLoader(tokenized_dataset, batch_size=32)
@@ -116,6 +114,8 @@ def test_model(dataset, checkpoint_path_list):
                 logits = outputs.logits
                 preds = torch.argmax(logits, dim=1)
                 predictions.extend(preds.cpu().numpy())
+        print(len(dataset['headline']))
+        print(len(dataset['labels']))
         print(len(predictions))
 
         with open(f'{os.path.splitext(os.path.basename(checkpoint_path))[0]}_results.csv', 'w') as table:
@@ -158,7 +158,6 @@ def main():
         return
 
     dataset = headline_dataset.train_test_split(test_size=0.2)
-    print(dataset)
 
     repo_name = "wwf-seaweed-headline-sentiment"
 
