@@ -114,7 +114,6 @@ def test_model(dataset, checkpoint_path_list):
                 logits = outputs.logits
                 preds = torch.argmax(logits, dim=1)
                 predictions.extend(preds.cpu().numpy())
-                break
 
         with open(f'{os.path.splitext(os.path.basename(checkpoint_path))[0]}_results.csv', 'w') as table:
             table.write('headline,sentiment,modeled sentiment\n')
@@ -129,11 +128,11 @@ def test_model(dataset, checkpoint_path_list):
                     f'{expected_label},'
                     f'{actual_label}\n')
             table.write('\n')
-            table.write(',' + ','.join(confusion_matrix) + '\n')
+            table.write(',' + ','.join(confusion_matrix) + 'accuracy\n')
             for label in confusion_matrix:
                 table.write(f'{label},' + ','.join(str(confusion_matrix[label][l]) for l in confusion_matrix))
                 total_sum = sum(confusion_matrix[label].values())
-                table.write(f'{confusion_matrix[label][label]/total_sum*100:.2f}%\n')
+                table.write(f',{confusion_matrix[label][label]/total_sum*100:.2f}%\n')
 
         print(f'{checkpoint_path} done')
 
