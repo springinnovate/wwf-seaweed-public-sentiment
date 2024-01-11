@@ -25,7 +25,7 @@ MODELS_TO_TEST = [
     #'bert-base-uncased',
     #'roberta-base',
     #'google/electra-base-generator',
-    'microsoft/deberta-v3-large',
+    #'microsoft/deberta-v3-large',
     'microsoft/deberta-v3-base',
     #'albert-base-v2',
     ]
@@ -111,8 +111,8 @@ def main():
 
     training_args = TrainingArguments(
        output_dir=repo_name,
-       per_device_train_batch_size=4,
-       per_device_eval_batch_size=4,
+       per_device_train_batch_size=16,
+       per_device_eval_batch_size=16,
        num_train_epochs=1,
        weight_decay=0.01,
        save_strategy="epoch",
@@ -140,7 +140,7 @@ def main():
             scale_parameter=True,
             relative_step=True,
             warmup_init=True,
-            lr=None
+            lr=1e-6
         )
         lr_scheduler = AdafactorSchedule(optimizer)
 
@@ -156,7 +156,7 @@ def main():
            compute_metrics=compute_metrics,
            optimizers=(optimizer, lr_scheduler)
         )
-        last_loss = None
+        lowest_loss = None
         increase_loss_count = 0
         for epoch in range(1000):
             trainer.train()
@@ -165,13 +165,13 @@ def main():
                 f"{eval_results['eval_loss']},{eval_results['eval_accuracy']}\n")
             model_performance.flush()
             print(eval_results)
-            if last_loss is not None and (last_loss < eval_results['eval_loss']):
+            if lowest_loss is not None and (lowest_loss > eval_results['eval_loss']):
                 increase_loss_count += 1
-                if increase_loss_count > 2:
+                if increase_loss_count > 5:
                     break
             else:
                 increase_loss_count = 0
-            last_loss = eval_results['eval_loss']
+                lowest_loss = eval_results['eval_loss']
             trainer.save_model(f"{repo_name}/{model_id.replace('/','-')}_{epoch+1}")
     model_performance.close()
     return
