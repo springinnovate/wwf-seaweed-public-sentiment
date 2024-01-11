@@ -13,6 +13,7 @@ from datasets import load_metric
 from huggingface_hub import login
 from transformers import TrainingArguments, Trainer
 from transformers import Adafactor
+from transformers import AdafactorSchedule
 
 
 with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
