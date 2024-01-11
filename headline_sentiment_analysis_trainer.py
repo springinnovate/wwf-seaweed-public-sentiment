@@ -98,7 +98,7 @@ def test_model(dataset, checkpoint_path_list):
 
         # Convert to PyTorch tensors and create a DataLoader
         tokenized_dataset.set_format('torch', columns=['input_ids', 'attention_mask', 'labels'])
-        dataloader = DataLoader(tokenized_dataset, batch_size=16)
+        dataloader = DataLoader(tokenized_dataset, batch_size=32)
 
         model.eval()  # Set the model to evaluation mode
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -114,7 +114,7 @@ def test_model(dataset, checkpoint_path_list):
                 preds = torch.argmax(logits, dim=1)
                 predictions.extend(preds.cpu().numpy())
 
-        with open(f'{os.path.splitext(os.path.basename(checkpoint_path))[0]}_results.csv') as table:
+        with open(f'{os.path.splitext(os.path.basename(checkpoint_path))[0]}_results.csv', 'w') as table:
             table.write('headline,sentiment,modeled sentiment\n')
             for headline, expected_label, actual_label in zip(
                     dataset['headline'], dataset['labels'], predictions):
