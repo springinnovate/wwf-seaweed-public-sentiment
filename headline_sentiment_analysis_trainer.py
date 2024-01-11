@@ -11,6 +11,7 @@ from transformers import AutoTokenizer
 from transformers import DataCollatorWithPadding
 from transformers import TrainingArguments, Trainer
 from transformers.optimization import AdafactorSchedule
+from tensorflow.keras.optimizers import Adam
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas
@@ -76,13 +77,14 @@ def test_model(df, checkpoint_path_list):
     for checkpoint_path in checkpoint_path_list:
         model = AutoModelForSequenceClassification.from_pretrained(
             checkpoint_path, num_labels=3)
+        model.compile(optimizer=Adam(3e-5))
         tokenizer = AutoTokenizer.from_pretrained(checkpoint_path)
 
         def preprocess_function(examples):
             return tokenizer(examples["headline"], truncation=True)
 
         tokenized_df = df.map(preprocess_function, batched=True)
-        result = model(tokenized_df)
+        result = model.fit(tokenized_df)
         print(f'{checkpoint_path}\n{result}')
 
 
