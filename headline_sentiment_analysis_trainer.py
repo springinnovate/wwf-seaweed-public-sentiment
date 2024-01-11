@@ -120,7 +120,7 @@ def main():
         model_performance.write(f'\n{model_id}\n')
         model_performance.write('eval_loss,eval_accuracy\n')
         trainer = Trainer(
-           model=model_id,
+           model=model,
            args=training_args,
            train_dataset=tokenized_train,
            eval_dataset=tokenized_test,
