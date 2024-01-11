@@ -11,10 +11,8 @@ from transformers import AutoTokenizer
 from transformers import DataCollatorWithPadding
 from transformers import TrainingArguments, Trainer
 from transformers.optimization import AdafactorSchedule
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas
-import seaborn as sns
 from torch.utils.data import DataLoader
 import torch
 
@@ -150,6 +148,8 @@ def main():
 
         tokenized_train = dataset['train'].map(
             _make_preprocess_function(tokenizer), batched=True)
+        print(tokenized_train)
+        return
         tokenized_test = dataset['test'].map(
             _make_preprocess_function(tokenizer), batched=True)
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
