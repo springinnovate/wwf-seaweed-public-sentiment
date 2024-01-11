@@ -12,15 +12,16 @@ import numpy as np
 from datasets import load_metric
 from huggingface_hub import login
 from transformers import TrainingArguments, Trainer
+from transfomers improt Adafactor
 
 
 with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
     access_token_write = file.readline().strip()
     login(access_token_write, write_permission=True)
 
-#MODEL_ID = 'bert-base-uncased'  # 0.854 after 5 epochs then loss starts to increase agasin
+MODEL_ID = 'bert-base-uncased'  # 0.854 after 5 epochs then loss starts to increase agasin
 #MODEL_ID = 'roberta-base'  # 0.821 after 4 epochs then loss incrases
-MODEL_ID = 'google/electra-base-generator' # working well got up to 0.84 after 5 or so
+#MODEL_ID = 'google/electra-base-generator' # got up to 0.806 beffore loss increases again
 #MODEL_ID = 'microsoft/deberta-v3-base'  # .865 after 6 epoch
 #MODEL_ID = 'albert-base-v2' # 0.844 after 6 with no significant further improvement
 TOKENIZER = AutoTokenizer.from_pretrained(
@@ -89,9 +90,18 @@ def main():
     tokenized_test = dataset['test'].map(preprocess_function, batched=True)
 
     repo_name = "wwf-seaweed-headline-sentiment"
+
+    optimizer = Adafactor(
+        MODEL.parameters(),
+        scale_parameter=True,
+        relative_step=True,
+        warmup_init=True,
+        lr=None  # This can be set to a specific learning rate or left as None
+    )
+    lr_scheduler = AdafactorSchedule(optimizer)
     training_args = TrainingArguments(
        output_dir=repo_name,
-       learning_rate=2e-5,
+       #learning_rate=2e-5,
        per_device_train_batch_size=16,
        per_device_eval_batch_size=16,
        num_train_epochs=1,
@@ -106,11 +116,16 @@ def main():
        eval_dataset=tokenized_test,
        tokenizer=TOKENIZER,
        data_collator=DATA_COLLATOR,
-       compute_metrics=compute_metrics
+       compute_metrics=compute_metrics,
+       optimizers=(optimizer, lr_scheduler)
     )
+    last_loss = None
     for epoch in range(MAX_EPOCHS):
         trainer.train()
-        print(trainer.evaluate())
+        eval_results = trainer.evaluate()
+        if last_loss is not None and (last_loss < eval_results['eval_loss']):
+            break
+        last_loss = eval_results['eval_loss']
         trainer.save_model(f"{repo_name}/model_epoch_{epoch+1}")
 
     # Make predictions on the test dataset
