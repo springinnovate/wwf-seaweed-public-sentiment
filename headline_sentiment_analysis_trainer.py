@@ -18,11 +18,9 @@ with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
     access_token_write = file.readline().strip()
     login(access_token_write, write_permission=True)
 
-#MODEL_ID = 'distilbert-base-uncased' # 0.7326315789473684 accuracy in 2 epochs
 #MODEL_ID = 'bert-base-uncased'  # 0.854 after 5 epochs then loss starts to increase agasin
-#MODEL_ID = 'bert-base-cased'  # 0.7705263157894737 accuracy in 2 epochs
-MODEL_ID = 'roberta-base'  # 0.7789473684210526 accuracy in 2 epochs
-#MODEL_ID = 'google/electra-base-generator' working well got up to 0.84 after 5 or so
+#MODEL_ID = 'roberta-base'  # 0.821 after 4 epochs then loss incrases
+MODEL_ID = 'google/electra-base-generator' # working well got up to 0.84 after 5 or so
 #MODEL_ID = 'microsoft/deberta-v3-base'  # .865 after 6 epoch
 #MODEL_ID = 'albert-base-v2' # 0.844 after 6 with no significant further improvement
 TOKENIZER = AutoTokenizer.from_pretrained(
