@@ -82,7 +82,8 @@ def test_model(df, checkpoint_path_list):
             return tokenizer(examples["headline"], truncation=True)
 
         tokenized_df = df.map(preprocess_function, batched=True)
-        result = model.predict(tokenized_df)
+        help(model)
+        result = model(tokenized_df)
         print(f'{checkpoint_path}\n{result}')
 
 
@@ -164,8 +165,8 @@ def main():
             model_performance.write(
                 f"{eval_results['eval_loss']},{eval_results['eval_accuracy']}\n")
             model_performance.flush()
-            print(eval_results)
-            if lowest_loss is not None and (lowest_loss > eval_results['eval_loss']):
+            print(f'epoch {epoch+1}\n{eval_results}')
+            if lowest_loss is not None and (lowest_loss < eval_results['eval_loss']):
                 increase_loss_count += 1
                 if increase_loss_count > 5:
                     break
