@@ -131,7 +131,7 @@ def test_model(dataset, checkpoint_path_list):
             table.write('\n')
             table.write(','.join(confusion_matrix) + '\n')
             for label in confusion_matrix:
-                table.write(f'{label},' + ','.join(confusion_matrix[label][l] for l in confusion_matrix) + '\n')
+                table.write(f'{label},' + ','.join(str(confusion_matrix[label][l]) for l in confusion_matrix) + '\n')
 
         print(f'{checkpoint_path} done')
 
