@@ -15,6 +15,7 @@ import numpy as np
 import pandas
 from torch.utils.data import DataLoader
 import torch
+import matplotlib.pyplot as plt
 
 
 with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
@@ -156,6 +157,10 @@ def main():
         print(tokenized_train['token_type_ids'])
         print(tokenized_train['attention_mask'])
         print(tokenized_train['input_ids'])
+        plt.hist([len(x) for x in tokenized_train['input_ids']], bins=50)
+        plt.xlabel('Token count')
+        plt.ylabel('Number of texts')
+        plt.show()
         return
         tokenized_test = dataset['test'].map(
             _make_preprocess_function(tokenizer), batched=True)
