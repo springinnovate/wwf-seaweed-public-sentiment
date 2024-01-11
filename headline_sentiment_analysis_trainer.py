@@ -153,8 +153,6 @@ def main():
     df = pandas.read_csv('data/papers/froelich_headlines.csv')
     df['labels'] = df.apply(map_labels, axis=1)
     headline_dataset = Dataset.from_pandas(df)
-    print(headline_dataset)
-    return
     if args.test_only:
         test_model(headline_dataset, args.model_checkpoint_paths)
         return
