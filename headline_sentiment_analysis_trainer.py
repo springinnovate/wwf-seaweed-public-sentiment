@@ -15,6 +15,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas
 import seaborn as sns
+from torch.utils.data import DataLoader
+import torch
 
 
 with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
@@ -71,19 +73,38 @@ def compute_metrics(eval_pred):
     return {"accuracy": accuracy, "f1": f1}
 
 
-def test_model(df, checkpoint_path_list):
+def test_model(dataset, checkpoint_path_list):
     # Replace this with the actual path to your saved model checkpoint
     for checkpoint_path in checkpoint_path_list:
         model = AutoModelForSequenceClassification.from_pretrained(
             checkpoint_path, num_labels=3)
-        tokenizer = AutoTokenizer.from_pretrained(checkpoint_path)
+        tokenizer = AutoTokenizer.from_pretrained(checkpoint_path, padding=True, max_length=512)
 
         def preprocess_function(examples):
             return tokenizer(examples["headline"], truncation=True)
 
-        tokenized_df = df.map(preprocess_function, batched=True)
-        result = model(tokenized_df)
-        print(f'{checkpoint_path}\n{result}')
+        tokenized_dataset = dataset.map(preprocess_function, batched=True)
+
+        # Convert to PyTorch tensors and create a DataLoader
+        tokenized_dataset.set_format('torch', columns=['input_ids', 'attention_mask', 'labels'])
+        dataloader = DataLoader(tokenized_dataset, batch_size=16)
+
+        model.eval()  # Set the model to evaluation mode
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model.to(device)
+
+        predictions = []
+        for batch in dataloader:
+            batch = {k: v.to(device) for k, v in batch.items()}
+            with torch.no_grad():
+                outputs = model(**batch)
+            logits = outputs.logits
+            preds = torch.argmax(logits, dim=1)
+            predictions.extend(preds.cpu().numpy())
+
+        print(f'{checkpoint_path}\n{predictions}')
+        # result = model(tokenized_dataset)
+        # print(f'{checkpoint_path}\n{result}')
 
 
 def main():
