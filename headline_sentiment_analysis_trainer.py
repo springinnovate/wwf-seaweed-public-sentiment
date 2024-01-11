@@ -89,28 +89,26 @@ def main():
     tokenized_test = dataset['test'].map(preprocess_function, batched=True)
 
     repo_name = "wwf-seaweed-headline-sentiment"
-
+    training_args = TrainingArguments(
+       output_dir=repo_name,
+       learning_rate=2e-5,
+       per_device_train_batch_size=16,
+       per_device_eval_batch_size=16,
+       num_train_epochs=1,
+       weight_decay=0.01,
+       save_strategy="epoch",
+       push_to_hub=True
+    )
+    trainer = Trainer(
+       model=MODEL,
+       args=training_args,
+       train_dataset=tokenized_train,
+       eval_dataset=tokenized_test,
+       tokenizer=TOKENIZER,
+       data_collator=DATA_COLLATOR,
+       compute_metrics=compute_metrics
+    )
     for epoch in range(MAX_EPOCHS):
-        training_args = TrainingArguments(
-           output_dir=repo_name,
-           learning_rate=2e-5,
-           per_device_train_batch_size=16,
-           per_device_eval_batch_size=16,
-           num_train_epochs=1,
-           weight_decay=0.01,
-           save_strategy="epoch",
-           push_to_hub=True
-        )
-
-        trainer = Trainer(
-           model=MODEL,
-           args=training_args,
-           train_dataset=tokenized_train,
-           eval_dataset=tokenized_test,
-           tokenizer=TOKENIZER,
-           data_collator=DATA_COLLATOR,
-           compute_metrics=compute_metrics
-        )
         trainer.train()
         print(trainer.evaluate())
         trainer.save_model(f"{repo_name}/model_epoch_{epoch+1}")
