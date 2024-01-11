@@ -19,9 +19,10 @@ with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
     login(access_token_write, write_permission=True)
 
 #MODEL_ID = 'distilbert-base-uncased' # 0.7326315789473684 accuracy in 2 epochs
-MODEL_ID = 'bert-base-uncased'  # 0.79 accuracy in 2 epochs
+#MODEL_ID = 'bert-base-uncased'  # 0.81 accuracy in 2 epochs
 #MODEL_ID = 'bert-base-cased'  # 0.7705263157894737 accuracy in 2 epochs
 #MODEL_ID = 'roberta-base'  # 0.7789473684210526 accuracy in 2 epochs
+MODEL_ID = 'cardiffnlp/twitter-roberta-base-sentiment-latest'
 TOKENIZER = AutoTokenizer.from_pretrained(
     MODEL_ID, token=access_token_write)
 DATA_COLLATOR = DataCollatorWithPadding(tokenizer=TOKENIZER)
@@ -95,7 +96,7 @@ def main():
            learning_rate=2e-5,
            per_device_train_batch_size=16,
            per_device_eval_batch_size=16,
-           num_train_epochs=2,
+           num_train_epochs=1,
            weight_decay=0.01,
            save_strategy="epoch",
            push_to_hub=True
