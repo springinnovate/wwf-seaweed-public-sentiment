@@ -124,6 +124,7 @@ def main():
     for epoch in range(MAX_EPOCHS):
         trainer.train()
         eval_results = trainer.evaluate()
+        print(eval_results)
         if last_loss is not None and (last_loss < eval_results['eval_loss']):
             break
         last_loss = eval_results['eval_loss']
