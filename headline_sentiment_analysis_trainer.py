@@ -114,7 +114,7 @@ def test_model(dataset, checkpoint_path_list):
                 preds = torch.argmax(logits, dim=1)
                 predictions.extend(preds.cpu().numpy())
 
-        with open(f'{os.path.splitext(os.path.basename(checkpoint_path_list))[0]}_results.csv') as table:
+        with open(f'{os.path.splitext(os.path.basename(checkpoint_path))[0]}_results.csv') as table:
             table.write('headline,sentiment,modeled sentiment\n')
             for headline, expected_label, actual_label in zip(
                     dataset['headline'], dataset['labels'], predictions):
