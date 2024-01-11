@@ -1,5 +1,6 @@
 """Trainer for seaweed headline sentiment analysis."""
 import argparse
+import os
 
 from datasets import Dataset
 from datasets import load_metric
@@ -59,6 +60,13 @@ def map_labels(row):
     label_dict = {-1: 0, 0: 1, 1: 2}
     return label_dict[row['sentiment']]
 
+def map_label_to_word(label):
+    if label == 0:
+        return 'NEGATIVE'
+    elif label == 1:
+        return 'NEUTRAL'
+    elif label == 2:
+        return 'POSITIVE'
 
 def compute_metrics(eval_pred):
     print(eval_pred)
@@ -81,9 +89,6 @@ def _make_preprocess_function(tokenizer):
 
 def test_model(dataset, checkpoint_path_list):
     # Replace this with the actual path to your saved model checkpoint
-    print(dataset['sentiment'])
-    print(dataset['labels'])
-    return
     for checkpoint_path in checkpoint_path_list:
         model = AutoModelForSequenceClassification.from_pretrained(
             checkpoint_path, num_labels=3)
@@ -101,16 +106,24 @@ def test_model(dataset, checkpoint_path_list):
 
         predictions = []
         with torch.no_grad():
-            for batch in dataloader:
+            for index, batch in enumerate(dataloader):
+                print(f'working on batch {index}')
                 batch = {k: v.to(device) for k, v in batch.items()}
                 outputs = model(**batch)
                 logits = outputs.logits
                 preds = torch.argmax(logits, dim=1)
                 predictions.extend(preds.cpu().numpy())
 
-        print(f'{checkpoint_path}\n{predictions}')
-        # result = model(tokenized_dataset)
-        # print(f'{checkpoint_path}\n{result}')
+        with open(f'{os.path.splitext(os.path.basename(checkpoint_path_list))[0]}_results.csv') as table:
+            table.write('headline,sentiment,modeled sentiment\n')
+            for headline, expected_label, actual_label in zip(
+                    dataset['headline'], dataset['labels'], predictions):
+                table.write(
+                    f'{headline},'
+                    f'{map_label_to_word(expected_label)},'
+                    f'{map_label_to_word(actual_label)}\n')
+
+        print(f'{checkpoint_path} done')
 
 
 def main():
