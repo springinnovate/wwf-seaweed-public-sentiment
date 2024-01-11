@@ -81,6 +81,8 @@ def _make_preprocess_function(tokenizer):
 
 def test_model(dataset, checkpoint_path_list):
     # Replace this with the actual path to your saved model checkpoint
+    print(dataset)
+    return
     for checkpoint_path in checkpoint_path_list:
         model = AutoModelForSequenceClassification.from_pretrained(
             checkpoint_path, num_labels=3)
@@ -97,13 +99,13 @@ def test_model(dataset, checkpoint_path_list):
         model.to(device)
 
         predictions = []
-        for batch in dataloader:
-            batch = {k: v.to(device) for k, v in batch.items()}
-            with torch.no_grad():
+        with torch.no_grad():
+            for batch in dataloader:
+                batch = {k: v.to(device) for k, v in batch.items()}
                 outputs = model(**batch)
-            logits = outputs.logits
-            preds = torch.argmax(logits, dim=1)
-            predictions.extend(preds.cpu().numpy())
+                logits = outputs.logits
+                preds = torch.argmax(logits, dim=1)
+                predictions.extend(preds.cpu().numpy())
 
         print(f'{checkpoint_path}\n{predictions}')
         # result = model(tokenized_dataset)
@@ -148,9 +150,6 @@ def main():
         tokenizer = AutoTokenizer.from_pretrained(
             model_id, token=access_token_write)
 
-        for text in df['headline']:
-            tokens = tokenizer.encode(text, add_special_tokens=True)
-            print(tokens)
         tokenized_train = dataset['train'].map(
             _make_preprocess_function(tokenizer), batched=True)
         tokenized_test = dataset['test'].map(
@@ -210,13 +209,13 @@ def main():
     # Generate the confusion matrix
     cm = confusion_matrix(true_labels, predicted_labels)
 
-    # Plot the confusion matrix
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(cm, annot=True, fmt='g', cmap='Blues')
-    plt.xlabel('Predicted labels')
-    plt.ylabel('True labels')
-    plt.title('Confusion Matrix')
-    plt.show()
+    # # Plot the confusion matrix
+    # plt.figure(figsize=(10, 8))
+    # sns.heatmap(cm, annot=True, fmt='g', cmap='Blues')
+    # plt.xlabel('Predicted labels')
+    # plt.ylabel('True labels')
+    # plt.title('Confusion Matrix')
+    # plt.show()
 
 
 if __name__ == '__main__':
