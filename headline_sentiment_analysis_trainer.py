@@ -23,9 +23,12 @@ with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
     login(access_token_write, write_permission=True)
 
 MODELS_TO_TEST = [
-    'bert-base-uncased', 'roberta-base',
-    'google/electra-base-generator', 'microsoft/deberta-v3-base',
-    'albert-base-v2']
+    #'bert-base-uncased',
+    #'roberta-base',
+    #'google/electra-base-generator',
+    'microsoft/deberta-v3-base',
+    #'albert-base-v2',
+    ]
 
 
 def plot_learning_curves(trainer):
@@ -169,7 +172,7 @@ def main():
             else:
                 increase_loss_count = 0
             last_loss = eval_results['eval_loss']
-            trainer.save_model(f"{repo_name}/model_epoch_{epoch+1}")
+            trainer.save_model(f"{repo_name}/{model_id.replace('/','-')}_{epoch+1}")
     model_performance.close()
     return
     # Make predictions on the test dataset
