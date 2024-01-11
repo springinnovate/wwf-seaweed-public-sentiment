@@ -73,6 +73,12 @@ def compute_metrics(eval_pred):
     return {"accuracy": accuracy, "f1": f1}
 
 
+def _make_preprocess_function(tokenizer):
+    def _preprocess_function(examples):
+        return tokenizer(examples["headline"], truncation=True, padding='max_length', max_length=512)
+    return _preprocess_function
+
+
 def test_model(dataset, checkpoint_path_list):
     # Replace this with the actual path to your saved model checkpoint
     for checkpoint_path in checkpoint_path_list:
@@ -80,10 +86,7 @@ def test_model(dataset, checkpoint_path_list):
             checkpoint_path, num_labels=3)
         tokenizer = AutoTokenizer.from_pretrained(checkpoint_path)
 
-        def preprocess_function(examples):
-            return tokenizer(examples["headline"], truncation=True, padding='max_length', max_length=512)
-
-        tokenized_dataset = dataset.map(preprocess_function, batched=True)
+        tokenized_dataset = dataset.map(_make_preprocess_function(tokenizer), batched=True)
 
         # Convert to PyTorch tensors and create a DataLoader
         tokenized_dataset.set_format('torch', columns=['input_ids', 'attention_mask', 'labels'])
@@ -145,13 +148,10 @@ def main():
         tokenizer = AutoTokenizer.from_pretrained(
             model_id, token=access_token_write)
 
-        def preprocess_function(examples):
-            return tokenizer(examples["headline"], truncation=True)
-
         tokenized_train = dataset['train'].map(
-            preprocess_function, batched=True)
+            _make_preprocess_function(tokenizer), batched=True)
         tokenized_test = dataset['test'].map(
-            preprocess_function, batched=True)
+            _make_preprocess_function(tokenizer), batched=True)
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
         model = AutoModelForSequenceClassification.from_pretrained(
