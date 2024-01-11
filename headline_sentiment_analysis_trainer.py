@@ -134,11 +134,13 @@ def main():
             eval_results = trainer.evaluate()
             model_performance.write(
                 f"{eval_results['eval_loss'],eval_results['eval_accuracy']}\n")
+            model_performance.flush()
             print(eval_results)
             if last_loss is not None and (last_loss < eval_results['eval_loss']):
                 break
             last_loss = eval_results['eval_loss']
             trainer.save_model(f"{repo_name}/model_epoch_{epoch+1}")
+    model_performance.close()
     return
     # Make predictions on the test dataset
     predictions = trainer.predict(tokenized_test)
