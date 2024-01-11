@@ -149,9 +149,11 @@ def main():
         help='Ignore offshore mangrove and saltmarsh')
     parser.add_argument(
         '--model_checkpoint_paths', nargs='+', help='If test only, which model to test.')
+    parser.add_argument(
+        '--headline_table_path', default='data/papers/froelich_headlines.csv', help='path to headline table')
     args = parser.parse_args()
 
-    df = pandas.read_csv('data/papers/froelich_headlines.csv')
+    df = pandas.read_csv(args.headline_table_path)
     df['labels'] = df.apply(map_labels, axis=1)
     headline_dataset = Dataset.from_pandas(df)
     if args.test_only:
