@@ -25,14 +25,6 @@ MODEL_ID = 'bert-base-uncased'  # 0.854 after 5 epochs then loss starts to incre
 #MODEL_ID = 'google/electra-base-generator' # got up to 0.806 beffore loss increases again
 #MODEL_ID = 'microsoft/deberta-v3-base'  # .865 after 6 epoch
 #MODEL_ID = 'albert-base-v2' # 0.844 after 6 with no significant further improvement
-TOKENIZER = AutoTokenizer.from_pretrained(
-    MODEL_ID, token=access_token_write)
-DATA_COLLATOR = DataCollatorWithPadding(tokenizer=TOKENIZER)
-
-MODEL = AutoModelForSequenceClassification.from_pretrained(
-    MODEL_ID, num_labels=3)
-
-MAX_EPOCHS = 1000
 
 def plot_learning_curves(trainer):
     # Extract training and validation loss
@@ -92,14 +84,6 @@ def main():
 
     repo_name = "wwf-seaweed-headline-sentiment"
 
-    optimizer = Adafactor(
-        MODEL.parameters(),
-        scale_parameter=True,
-        relative_step=True,
-        warmup_init=True,
-        lr=None  # This can be set to a specific learning rate or left as None
-    )
-    lr_scheduler = AdafactorSchedule(optimizer)
     training_args = TrainingArguments(
        output_dir=repo_name,
        #learning_rate=2e-5,
@@ -116,6 +100,21 @@ def main():
             'bert-base-uncased', 'roberta-base',
             'google/electra-base-generator', 'microsoft/deberta-v3-base',
             'albert-base-v2']:
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_id, token=access_token_write)
+        data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+
+        model = AutoModelForSequenceClassification.from_pretrained(
+            model_id, num_labels=3)
+        optimizer = Adafactor(
+            model.parameters(),
+            scale_parameter=True,
+            relative_step=True,
+            warmup_init=True,
+            lr=None  # This can be set to a specific learning rate or left as None
+        )
+        lr_scheduler = AdafactorSchedule(optimizer)
+
         model_performance.write(f'\n{model_id}\n')
         model_performance.write('eval_loss,eval_accuracy\n')
         trainer = Trainer(
@@ -123,13 +122,14 @@ def main():
            args=training_args,
            train_dataset=tokenized_train,
            eval_dataset=tokenized_test,
-           tokenizer=TOKENIZER,
-           data_collator=DATA_COLLATOR,
+           tokenizer=tokenizer,
+           data_collator=data_collator,
            compute_metrics=compute_metrics,
            optimizers=(optimizer, lr_scheduler)
         )
         last_loss = None
-        for epoch in range(MAX_EPOCHS):
+        increase_loss_count = 0
+        for epoch in range(1000):
             trainer.train()
             eval_results = trainer.evaluate()
             model_performance.write(
@@ -137,7 +137,11 @@ def main():
             model_performance.flush()
             print(eval_results)
             if last_loss is not None and (last_loss < eval_results['eval_loss']):
-                break
+                increase_loss_count += 1
+                if increase_loss_count > 2:
+                    break
+            else:
+                increase_loss_count = 0
             last_loss = eval_results['eval_loss']
             trainer.save_model(f"{repo_name}/model_epoch_{epoch+1}")
     model_performance.close()
