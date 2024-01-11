@@ -12,7 +12,7 @@ import numpy as np
 from datasets import load_metric
 from huggingface_hub import login
 from transformers import TrainingArguments, Trainer
-from transfomers import Adafactor
+from transformers import Adafactor
 
 
 with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
