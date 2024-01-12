@@ -91,7 +91,7 @@ def _make_preprocess_function(tokenizer):
 def test_model_pipeline(dataset, checkpoint_path_list):
     # Replace this with the actual path to your saved model checkpoint
     for checkpoint_path in checkpoint_path_list:
-        model = pipeline('sentiment-analysis', model=checkpoint_path, num_labels=3)
+        model = pipeline('sentiment-analysis', model=checkpoint_path)
         predictions = model(dataset['headline'])
         print(len(dataset['headline']))
         print(len(dataset['labels']))
