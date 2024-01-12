@@ -92,12 +92,7 @@ def test_model_pipeline(dataset, checkpoint_path_list):
     # Replace this with the actual path to your saved model checkpoint
     for checkpoint_path in checkpoint_path_list:
         model = pipeline(model=checkpoint_path, num_labels=3)
-        tokenizer = AutoTokenizer.from_pretrained(checkpoint_path)
-        tokenized_dataset = dataset.map(_make_preprocess_function(tokenizer), batched=True)
-        print(len(tokenized_dataset))
-        # Convert to PyTorch tensors and create a DataLoader
-        #tokenized_dataset.set_format('torch', columns=['input_ids', 'attention_mask', 'labels'])
-        predictions = model(tokenized_dataset)
+        predictions = model(dataset['headline'])
         print(len(dataset['headline']))
         print(len(dataset['labels']))
         print(len(predictions))
