@@ -8,6 +8,7 @@ from datasets import load_metric
 from huggingface_hub import login
 from sklearn.metrics import confusion_matrix
 from transformers import Adafactor
+from transformers import pipeline
 from transformers import AutoModelForSequenceClassification
 from transformers import AutoTokenizer
 from transformers import DataCollatorWithPadding
@@ -87,6 +88,42 @@ def _make_preprocess_function(tokenizer):
         return tokenizer(examples["headline"], truncation=True, padding='max_length', max_length=50)
     return _preprocess_function
 
+def test_model_pipeline(dataset, checkpoint_path_list):
+    # Replace this with the actual path to your saved model checkpoint
+    for checkpoint_path in checkpoint_path_list:
+        model = pipeline(model=checkpoint_path, num_labels=3)
+        tokenizer = AutoTokenizer.from_pretrained(checkpoint_path)
+        tokenized_dataset = dataset.map(_make_preprocess_function(tokenizer), batched=True)
+        print(len(tokenized_dataset))
+        # Convert to PyTorch tensors and create a DataLoader
+        #tokenized_dataset.set_format('torch', columns=['input_ids', 'attention_mask', 'labels'])
+        predictions = model(tokenized_dataset)
+        print(len(dataset['headline']))
+        print(len(dataset['labels']))
+        print(len(predictions))
+
+        with open(f'{os.path.splitext(os.path.basename(checkpoint_path))[0]}_results.csv', 'w') as table:
+            table.write('headline,sentiment,modeled sentiment\n')
+            confusion_matrix = collections.defaultdict(lambda: collections.defaultdict(int))
+            for headline, expected_id, actual_id in zip(
+                    dataset['headline'], dataset['labels'], predictions):
+                expected_label = map_label_to_word(expected_id)
+                actual_label = map_label_to_word(actual_id)
+                confusion_matrix[expected_label][actual_label] += 1
+                headline = headline.replace('"', '')
+                table.write(
+                    f'"{headline}",'
+                    f'{expected_label},'
+                    f'{actual_label}\n')
+            table.write('\n')
+            table.write(',' + ','.join(confusion_matrix) + ',accuracy\n')
+            for label in confusion_matrix:
+                table.write(f'{label},' + ','.join(str(confusion_matrix[label][l]) for l in confusion_matrix))
+                total_sum = sum(confusion_matrix[label].values())
+                table.write(f',{confusion_matrix[label][label]/total_sum*100:.2f}%\n')
+
+        print(f'{checkpoint_path} done')
+
 
 def test_model(dataset, checkpoint_path_list):
     # Replace this with the actual path to your saved model checkpoint
@@ -157,7 +194,7 @@ def main():
     df['labels'] = df.apply(map_labels, axis=1)
     headline_dataset = Dataset.from_pandas(df)
     if args.test_only:
-        test_model(headline_dataset, args.model_checkpoint_paths)
+        test_model_pipeline(headline_dataset, args.model_checkpoint_paths)
         return
 
     dataset = headline_dataset.train_test_split(test_size=0.2)

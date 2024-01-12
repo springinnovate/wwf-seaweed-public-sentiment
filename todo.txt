@@ -1,20 +1,28 @@
+* refactor to use transformer
+
+    from transformers import pipeline
+
+sentiment_model = pipeline(model="federicopascual/finetuning-sentiment-model-3000-samples")
+sentiment_model(["I love this move", "This movie sucks!"])
+
 x read the paper
-    * what method did they use for sentiment analysis?
-        * authors did independent, then resolved to consensus if they disagreed
-        * there's also an analysis on government public documents they did that seems less relevant, I'll just focus on headlines unless told otherwise
+    x what method did they use for sentiment analysis?
+        x authors did independent, then resolved to consensus if they disagreed
+        x there's also an analysis on government public documents they did that seems less relevant, I'll just focus on headlines unless told otherwise
 
 x read about HF sentiment analysis
-    * can i add dictionary?
-        * not sure how this was used, i think maybe in the gov't documents
-    * can i do transfer learning?
-        * yes, following this method: https://huggingface.co/blog/sentiment-analysis-python
+    x can i add dictionary?
+        x not sure how this was used, i think maybe in the gov't documents
+    x can i do transfer learning?
+        x yes, following this method: https://huggingface.co/blog/sentiment-analysis-python
 
 
-* what i want to do in my script
-    * can i start from a better base?
-    * can i make the output prettier (neg, pos, neu)
-    * can i do more kinds of training to get a better fit?
+x what i want to do in my script
+    x can i start from a better base?
+    x can i make the output prettier (neg, pos, neu)
+    x can i do more kinds of training to get a better fit?
     * can i do a k-fold?
-    * can i examine the mis-matches better?
+    x can i examine the mis-matches better?
 
-* apply result to paper for training
+x apply result to paper for training
+
