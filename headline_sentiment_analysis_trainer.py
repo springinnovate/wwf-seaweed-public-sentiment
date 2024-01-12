@@ -93,6 +93,7 @@ def test_model_pipeline(dataset, checkpoint_path_list):
         device = "cuda"
     else:
         device = "cpu"
+    print(f'using {device}')
     for checkpoint_path in checkpoint_path_list:
 
         model = pipeline(
