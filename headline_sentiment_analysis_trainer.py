@@ -89,9 +89,14 @@ def _make_preprocess_function(tokenizer):
     return _preprocess_function
 
 def test_model_pipeline(dataset, checkpoint_path_list):
-    # Replace this with the actual path to your saved model checkpoint
+    if torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = "cpu"
     for checkpoint_path in checkpoint_path_list:
-        model = pipeline('sentiment-analysis', model=checkpoint_path)
+
+        model = pipeline(
+            'sentiment-analysis', model=checkpoint_path, device=device)
         predictions = model(dataset['headline'])
         print(len(dataset['headline']))
         print(len(dataset['labels']))
