@@ -191,6 +191,19 @@ def main():
         '--headline_table_path', default='data/papers/froelich_headlines.csv', help='path to headline table')
     args = parser.parse_args()
 
+    model = pipeline(
+            'sentiment-analysis', model=args.model_checkpoint_paths[0], device='cuda')
+    while True:
+        headline = input().rstrip()
+        result = model([headline])
+        if result[0]['label'] == 'LABEL_0':
+            print(f'{headline}: bad')
+        elif result[0]['label'] == 'LABEL_1':
+            print(f'{headline}: neutral')
+        else:
+            print(f'{headline}: good')
+    return
+
     df = pandas.read_csv(args.headline_table_path)
     df['labels'] = df.apply(map_labels, axis=1)
     headline_dataset = Dataset.from_pandas(df)
