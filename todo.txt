@@ -1,3 +1,10 @@
+TODO:
+* parse through Dan's word doc papers for the up-to-date info, that's on bigboi under "data" now
+    * do sentiment tagging on the headlines
+    * also, can i location tag?
+    * relevance tag for "aquaculture" vs "seaweed aquaculture"?
+
+
 x refactor to use transformer pipeline (wasn't any better than the batching i had before)
 
 x read the paper
