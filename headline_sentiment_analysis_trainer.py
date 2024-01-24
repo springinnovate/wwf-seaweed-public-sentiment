@@ -6,9 +6,8 @@ import os
 from datasets import Dataset
 from datasets import load_metric
 from huggingface_hub import login
-from sklearn.metrics import confusion_matrix
+from torch.utils.data import DataLoader
 from transformers import Adafactor
-from transformers import pipeline
 from transformers import AutoModelForSequenceClassification
 from transformers import AutoTokenizer
 from transformers import DataCollatorWithPadding
@@ -16,9 +15,7 @@ from transformers import TrainingArguments, Trainer
 from transformers.optimization import AdafactorSchedule
 import numpy as np
 import pandas
-from torch.utils.data import DataLoader
 import torch
-import matplotlib.pyplot as plt
 
 
 with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
@@ -29,38 +26,15 @@ MODELS_TO_TEST = [
     #'bert-base-uncased',
     #'roberta-base',
     #'google/electra-base-generator',
-    'microsoft/deberta-v3-base',
     #'albert-base-v2',
+    'microsoft/deberta-v3-base',
     ]
-
-
-def plot_learning_curves(trainer):
-    # Extract training and validation loss
-    training_loss = [entry['loss'] for entry in trainer.state.log_history if 'loss' in entry]
-    validation_loss = [entry['eval_loss'] for entry in trainer.state.log_history if 'eval_loss' in entry]
-
-    # Create a figure and a set of subplots
-    fig, ax = plt.subplots()
-
-    # Plot training and validation loss
-    ax.plot(training_loss, label='Training loss')
-    ax.plot(validation_loss, label='Validation loss')
-
-    # Add title and labels
-    ax.set_title('Training and Validation Loss')
-    ax.set_xlabel('Epochs')
-    ax.set_ylabel('Loss')
-
-    # Add legend
-    ax.legend()
-
-    # Show the plot
-    plt.show()
 
 
 def map_labels(row):
     label_dict = {-1: 0, 0: 1, 1: 2}
     return label_dict[row['sentiment']]
+
 
 def map_label_to_word(label):
     if label == 0:
@@ -69,6 +43,7 @@ def map_label_to_word(label):
         return 'NEUTRAL'
     elif label == 2:
         return 'POSITIVE'
+
 
 def compute_metrics(eval_pred):
     print(eval_pred)
@@ -84,46 +59,8 @@ def compute_metrics(eval_pred):
 
 def _make_preprocess_function(tokenizer):
     def _preprocess_function(examples):
-        #return tokenizer(examples["headline"], truncation=True)
         return tokenizer(examples["headline"], truncation=True, padding='max_length', max_length=50)
     return _preprocess_function
-
-def test_model_pipeline(dataset, checkpoint_path_list):
-    if torch.cuda.is_available():
-        device = "cuda"
-    else:
-        device = "cpu"
-    print(f'using {device}')
-    for checkpoint_path in checkpoint_path_list:
-
-        model = pipeline(
-            'sentiment-analysis', model=checkpoint_path, device=device)
-        predictions = model(dataset['headline'])
-        print(len(dataset['headline']))
-        print(len(dataset['labels']))
-        print(len(predictions))
-
-        with open(f'{os.path.splitext(os.path.basename(checkpoint_path))[0]}_results.csv', 'w') as table:
-            table.write('headline,sentiment,modeled sentiment\n')
-            confusion_matrix = collections.defaultdict(lambda: collections.defaultdict(int))
-            for headline, expected_id, actual_id in zip(
-                    dataset['headline'], dataset['labels'], predictions):
-                expected_label = map_label_to_word(expected_id)
-                actual_label = map_label_to_word(actual_id)
-                confusion_matrix[expected_label][actual_label] += 1
-                headline = headline.replace('"', '')
-                table.write(
-                    f'"{headline}",'
-                    f'{expected_label},'
-                    f'{actual_label}\n')
-            table.write('\n')
-            table.write(',' + ','.join(confusion_matrix) + ',accuracy\n')
-            for label in confusion_matrix:
-                table.write(f'{label},' + ','.join(str(confusion_matrix[label][l]) for l in confusion_matrix))
-                total_sum = sum(confusion_matrix[label].values())
-                table.write(f',{confusion_matrix[label][label]/total_sum*100:.2f}%\n')
-
-        print(f'{checkpoint_path} done')
 
 
 def test_model(dataset, checkpoint_path_list):
@@ -208,7 +145,7 @@ def main():
     df['labels'] = df.apply(map_labels, axis=1)
     headline_dataset = Dataset.from_pandas(df)
     if args.test_only:
-        test_model_pipeline(headline_dataset, args.model_checkpoint_paths)
+        test_model(headline_dataset, args.model_checkpoint_paths)
         return
 
     dataset = headline_dataset.train_test_split(test_size=0.2)
@@ -279,24 +216,6 @@ def main():
             lowest_loss = eval_results['eval_loss']
             trainer.save_model(f"{repo_name}/{model_id.replace('/','-')}_{epoch+1}")
     model_performance.close()
-    return
-    # Make predictions on the test dataset
-    predictions = trainer.predict(tokenized_test)
-    predicted_labels = np.argmax(predictions.predictions, axis=-1)
-
-    # True labels
-    true_labels = predictions.label_ids
-
-    # Generate the confusion matrix
-    cm = confusion_matrix(true_labels, predicted_labels)
-
-    # # Plot the confusion matrix
-    # plt.figure(figsize=(10, 8))
-    # sns.heatmap(cm, annot=True, fmt='g', cmap='Blues')
-    # plt.xlabel('Predicted labels')
-    # plt.ylabel('True labels')
-    # plt.title('Confusion Matrix')
-    # plt.show()
 
 
 if __name__ == '__main__':

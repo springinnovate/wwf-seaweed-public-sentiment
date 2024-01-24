@@ -1,9 +1,4 @@
-* refactor to use transformer
-
-    from transformers import pipeline
-
-sentiment_model = pipeline(model="federicopascual/finetuning-sentiment-model-3000-samples")
-sentiment_model(["I love this move", "This movie sucks!"])
+x refactor to use transformer pipeline (wasn't any better than the batching i had before)
 
 x read the paper
     x what method did they use for sentiment analysis?
@@ -25,4 +20,3 @@ x what i want to do in my script
     x can i examine the mis-matches better?
 
 x apply result to paper for training
-
