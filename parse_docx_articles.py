@@ -69,16 +69,16 @@ def parse_docx(file_path, headline_sentiment_model):
         result['year'] = 'unknown'
 
     for text in paragaph_iter:
-        tag = text.split(':')[0]
+        tag = text.split(':')[0].lower()
         if tag in result:
-            result[tag] = text
+            result[tag] = '.'.join(text.split(':')[1:]).replace(
+                '\xa0', ' ').strip()
 
     headline_sentiment = headline_sentiment_model([headline_text])[0]
     result['headline-sentiment'] = HEADLINE_LABEL_TO_SENTIMENT[headline_sentiment['label']]
     result['headline-sentiment-score'] = headline_sentiment['score']
-
     print(f'time to parse = {time.time()-start_time}s')
-
+    print(result)
     return result
 
 
@@ -97,8 +97,7 @@ def main():
         for index, file_path in enumerate(glob.glob(args.path_to_files)):
             future = executor.submit(parse_docx, file_path, model)
             future_list.append(future)
-            if index > 4:
-                break
+            break
         df = pandas.DataFrame.from_records([future.result() for future in future_list])
         df.to_csv('_parse_doc.csv')
 
