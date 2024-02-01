@@ -68,9 +68,9 @@ def parse_docx(file_path, headline_sentiment_model):
     }
 
     try:
-        result['year'] = re.search(r'\d{4}', date_text).group()
+        result['year'] = int(re.search(r'\d{4}', date_text).group())
     except AttributeError:
-        result['year'] = 'unknown'
+        result['year'] = None
 
     for text in paragaph_iter:
         tag = text.split(':')[0].lower()
@@ -91,6 +91,7 @@ def parse_docx(file_path, headline_sentiment_model):
         headline=headline_text,
         body=body_text,
         date=date_text,
+        year=result['year'],
         publication=publication_text,
         headline_sentiment_ai=headline_sentiment,
         )
