@@ -108,7 +108,7 @@ def main():
 
     print(f'load {MODEL_PATH}')
     model = pipeline(
-        'sentiment-analysis', model=MODEL_PATH, device='cpu')
+        'sentiment-analysis', model=MODEL_PATH, device='cuda')
     print('loaded...')
 
     with ThreadPoolExecutor(max_workers=4) as executor:
@@ -116,11 +116,11 @@ def main():
         for index, file_path in enumerate(glob.glob(args.path_to_files)):
             future = executor.submit(parse_docx, file_path, model)
             future_list.append(future)
-            break
         db.add_all([future.result() for future in future_list])
 
     db.commit()
     db.close()
+
 
 if __name__ == '__main__':
     main()
