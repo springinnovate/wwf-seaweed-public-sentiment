@@ -9,6 +9,10 @@ from docx import Document
 from transformers import pipeline
 from concurrent.futures import ThreadPoolExecutor
 
+from sqlalchemy.orm import Session
+from database_model_definitions import Article, AIResultHeadline
+from database import SessionLocal, init_db
+
 MODEL_PATH = 'wwf-seaweed-headline-sentiment/microsoft-deberta-v3-base_6'
 HEADLINE_LABEL_TO_SENTIMENT = {
     'LABEL_0': 'bad',
@@ -74,12 +78,23 @@ def parse_docx(file_path, headline_sentiment_model):
             result[tag] = '.'.join(text.split(':')[1:]).replace(
                 '\xa0', ' ').strip()
 
-    headline_sentiment = headline_sentiment_model([headline_text])[0]
-    result['headline-sentiment'] = HEADLINE_LABEL_TO_SENTIMENT[headline_sentiment['label']]
-    result['headline-sentiment-score'] = headline_sentiment['score']
+    headline_sentiment_result = headline_sentiment_model([headline_text])[0]
+
+    headline_sentiment = AIResultHeadline(
+        value=HEADLINE_LABEL_TO_SENTIMENT[headline_sentiment_result['label']],
+        score=headline_sentiment_result['score'])
+
     print(f'time to parse = {time.time()-start_time}s')
     print(result)
-    return result
+
+    new_article = Article(
+        headline=headline_text,
+        body=body_text,
+        date=date_text,
+        publication=publication_text,
+        headline_sentiment_ai=headline_sentiment,
+        )
+    return new_article
 
 
 def main():
@@ -87,9 +102,12 @@ def main():
     parser.add_argument('path_to_files', help='Path/wildcard to docx files')
     args = parser.parse_args()
 
+    init_db()
+    db = SessionLocal()
+
     print(f'load {MODEL_PATH}')
     model = pipeline(
-        'sentiment-analysis', model=MODEL_PATH, device='cuda')
+        'sentiment-analysis', model=MODEL_PATH, device='cpu')
     print('loaded...')
 
     with ThreadPoolExecutor(max_workers=4) as executor:
@@ -98,9 +116,10 @@ def main():
             future = executor.submit(parse_docx, file_path, model)
             future_list.append(future)
             break
-        df = pandas.DataFrame.from_records([future.result() for future in future_list])
-        df.to_csv('_parse_doc.csv')
+        db.add_all([future.result() for future in future_list])
 
+    db.commit()
+    db.close()
 
 if __name__ == '__main__':
     main()
