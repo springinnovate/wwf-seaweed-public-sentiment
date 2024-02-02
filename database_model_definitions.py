@@ -25,8 +25,8 @@ class Article(Base):
     body_subject_ai: Mapped[Optional[List["AIResultBody"]]] = relationship(back_populates="article")
     geographic_location_ai: Mapped[Optional[List["AIResultLocation"]]] = relationship(back_populates="article")
     ground_truth_headline_sentiment: Mapped[Optional[str]]
-    ground_truth_body_subject: Mapped[Optional[List[str]]]
-    ground_truth_body_location: Mapped[Optional[List[str]]]
+    ground_truth_body_subject: Mapped[Optional[str]]
+    ground_truth_body_location: Mapped[Optional[str]]
 
 
 class AIResultHeadline(Base):
