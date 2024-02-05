@@ -1,9 +1,8 @@
 TODO:
-* parse through Dan's word doc papers for the up-to-date info, that's on bigboi under "data" now
-    * do sentiment tagging on the headlines
+x parse through Dan's word doc papers for the up-to-date info, that's on bigboi under "data" now
+     do sentiment tagging on the headlines
     * also, can i location tag?
     * relevance tag for "aquaculture" vs "seaweed aquaculture"?
-
 
 x refactor to use transformer pipeline (wasn't any better than the batching i had before)
 
@@ -27,3 +26,23 @@ x what i want to do in my script
     x can i examine the mis-matches better?
 
 x apply result to paper for training
+
+
+* proportion of total headlines that were good and remove all duplicates does the propriotion change.
+* country location
+    * except for US do the state
+
+
+* Database design
+    * headline
+    * body
+    * date
+    * industry
+    * geographic region
+    * headline-sentiment
+    * headline-sentiment score
+    * bodysubject
+
+* Pipeline
+    * ingest articles from .docx or .pdf and dump to database?
+        * check for duplication here, articles with same headline w/in 7 days of each other?
