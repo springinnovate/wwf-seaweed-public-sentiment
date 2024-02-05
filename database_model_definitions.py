@@ -18,11 +18,15 @@ class Article(Base):
     id_key: Mapped[int] = mapped_column(primary_key=True)
     headline: Mapped[str]
     body: Mapped[str]
-    date: Mapped[date]
+    date: Mapped[str]
+    year: Mapped[Optional[int]]
     publication: Mapped[str]
-    headline_sentiment_ai: Mapped[List["AIResultHeadline"]] = relationship(back_populates="article")
+    headline_sentiment_ai: Mapped[Optional["AIResultHeadline"]] = relationship(back_populates="article")
     body_subject_ai: Mapped[Optional[List["AIResultBody"]]] = relationship(back_populates="article")
     geographic_location_ai: Mapped[Optional[List["AIResultLocation"]]] = relationship(back_populates="article")
+    ground_truth_headline_sentiment: Mapped[Optional[str]]
+    ground_truth_body_subject: Mapped[Optional[str]]
+    ground_truth_body_location: Mapped[Optional[str]]
 
 
 class AIResultHeadline(Base):
