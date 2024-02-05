@@ -11,15 +11,8 @@ from concurrent.futures import ThreadPoolExecutor
 from database_model_definitions import Article
 from database import SessionLocal, init_db
 
-MODEL_PATH = 'wwf-seaweed-headline-sentiment/microsoft-deberta-v3-base_6'
-HEADLINE_LABEL_TO_SENTIMENT = {
-    'LABEL_0': 'bad',
-    'LABEL_1': 'neutral',
-    'LABEL_2': 'good',
-}
 
-
-def parse_docx(file_path, headline_sentiment_model):
+def parse_docx(file_path):
     start_time = time.time()
     print(f'parsing {file_path}')
 

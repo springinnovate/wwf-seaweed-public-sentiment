@@ -71,9 +71,7 @@ def main():
             future_list.append(future)
             break
         article_list = [article for future in future_list for article in future.result()]
-
     db.add_all(article_list)
-
     db.commit()
     db.close()
 
