@@ -36,6 +36,7 @@ def parse_pdf(file_path):
             'body': body_text,
             'publication': publication_text,
             'date': date_text,
+            'source_file': file_path,
         }
 
         try:
