@@ -8,7 +8,7 @@ from pypdf import PdfReader
 from concurrent.futures import ThreadPoolExecutor
 
 from database_model_definitions import Article
-from datbase_operations import upsert_articles
+from database_operations import upsert_articles
 from database import SessionLocal, init_db
 
 RE_TEXT = '(.*(?:\n[^\n]+)+)\n\n(\S* \d{1,2}, \d{4}) \| (.*)'
