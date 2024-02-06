@@ -1,4 +1,17 @@
 TODO:
+x Ingest the PDF list
+* DB "clean" script, to de-duplicate
+* Ingest the froueleich headlines w/ sentiment
+* de-duplicate headlines
+* apply headline sentiment to all headlines
+    * report
+        * summary in presentation
+        * raw results to whomever wants them
+
+
+
+
+
 x parse through Dan's word doc papers for the up-to-date info, that's on bigboi under "data" now
      do sentiment tagging on the headlines
     * also, can i location tag?
@@ -27,21 +40,19 @@ x what i want to do in my script
 
 x apply result to paper for training
 
-
-* proportion of total headlines that were good and remove all duplicates does the propriotion change.
+* proportion of total headlines that were good and remove all duplicates does the proportion change.
 * country location
     * except for US do the state
 
-
-* Database design
-    * headline
-    * body
-    * date
-    * industry
-    * geographic region
-    * headline-sentiment
-    * headline-sentiment score
-    * bodysubject
+x Database design
+    x headline
+    x body
+    x date
+    x industry
+    x geographic region
+    x headline-sentiment
+    x headline-sentiment score
+    x bodysubject
 
 * Pipeline
     * ingest articles from .docx or .pdf and dump to database?
