@@ -17,10 +17,10 @@ class Article(Base):
     __tablename__ = 'article'
     id_key: Mapped[int] = mapped_column(primary_key=True)
     headline: Mapped[str]
-    body: Mapped[str]
-    date: Mapped[str]
+    body: Mapped[Optional[str]]
+    date: Mapped[Optional[str]]
     year: Mapped[Optional[int]]
-    publication: Mapped[str]
+    publication: Mapped[Optional[str]]
     headline_sentiment_ai: Mapped[Optional["AIResultHeadline"]] = relationship(back_populates="article")
     body_subject_ai: Mapped[Optional[List["AIResultBody"]]] = relationship(back_populates="article")
     geographic_location_ai: Mapped[Optional[List["AIResultLocation"]]] = relationship(back_populates="article")
