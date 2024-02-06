@@ -66,7 +66,7 @@ def main():
     init_db()
     db = SessionLocal()
 
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    with ThreadPoolExecutor() as executor:
         future_list = []
         for index, file_path in enumerate(glob.glob(args.path_to_files)):
             future = executor.submit(parse_pdf, file_path)

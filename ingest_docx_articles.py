@@ -4,27 +4,18 @@ import glob
 import re
 import time
 
-import pandas
 from docx import Document
-from transformers import pipeline
 from concurrent.futures import ThreadPoolExecutor
 
-from sqlalchemy.orm import Session
-from database_model_definitions import Article, AIResultHeadline
-from datbase_operations import upsert_articles
+from database_model_definitions import Article
+from database_operations import upsert_articles
 from database import SessionLocal, init_db
 
-MODEL_PATH = 'wwf-seaweed-headline-sentiment/microsoft-deberta-v3-base_6'
-HEADLINE_LABEL_TO_SENTIMENT = {
-    'LABEL_0': 'bad',
-    'LABEL_1': 'neutral',
-    'LABEL_2': 'good',
-}
 
-
-def parse_docx(file_path, headline_sentiment_model):
+def parse_docx(file_path):
     start_time = time.time()
     print(f'parsing {file_path}')
+
     class Parser:
         def __init__(self):
             doc = Document(file_path)
@@ -79,12 +70,6 @@ def parse_docx(file_path, headline_sentiment_model):
             result[tag] = '.'.join(text.split(':')[1:]).replace(
                 '\xa0', ' ').strip()
 
-    headline_sentiment_result = headline_sentiment_model([headline_text])[0]
-
-    headline_sentiment = AIResultHeadline(
-        value=HEADLINE_LABEL_TO_SENTIMENT[headline_sentiment_result['label']],
-        score=headline_sentiment_result['score'])
-
     print(f'time to parse = {time.time()-start_time}s')
     print(result)
 
@@ -94,7 +79,7 @@ def parse_docx(file_path, headline_sentiment_model):
         date=date_text,
         year=result['year'],
         publication=publication_text,
-        headline_sentiment_ai=headline_sentiment,
+        source_file=file_path,
         )
     return new_article
 
@@ -107,17 +92,13 @@ def main():
     init_db()
     db = SessionLocal()
 
-    print(f'load {MODEL_PATH}')
-    model = pipeline(
-        'sentiment-analysis', model=MODEL_PATH, device='cuda')
-    print('loaded...')
-
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    with ThreadPoolExecutor() as executor:
         future_list = []
         for index, file_path in enumerate(glob.glob(args.path_to_files)):
-            future = executor.submit(parse_docx, file_path, model)
+            future = executor.submit(parse_docx, file_path)
             future_list.append(future)
-        db.add_all([future.result() for future in future_list])
+        article_list = [future.result() for future in future_list]
+    upsert_articles(db, article_list)
 
     db.commit()
     db.close()
