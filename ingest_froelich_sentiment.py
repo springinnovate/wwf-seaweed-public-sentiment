@@ -41,12 +41,19 @@ def main():
             func.lower(Article.headline) == func.lower(row['headline'])).all()
         for article in matching_articles:
             article.ground_truth_headline_sentiment = froelich_sentiment
+            article.year = row['year']
+            article.ground_truth_body_subject = row['field']
+            article.ground_truth_body_location = row['region']
+
         if matching_articles == []:
             # insert a new article
             new_article = Article(
                 headline=row['headline'],
+                year=row['year'],
                 ground_truth_headline_sentiment=froelich_sentiment,
                 source_file='data/papers/froelich_headlines.csv',
+                ground_truth_body_subject=row['field'],
+                ground_truth_body_location=row['region'],
                 )
             new_article_list.append(new_article)
 
