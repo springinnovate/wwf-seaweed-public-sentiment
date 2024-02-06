@@ -8,10 +8,6 @@ from database import SessionLocal, init_db
 def main():
     init_db()
     session = SessionLocal()
-    session.query(Article).filter(
-        Article.body == '').delete()
-    session.commit()
-
     for article in session.query(Article).all():
         if article.date is not None:
             year = re.search('(\d{4})', article.date)

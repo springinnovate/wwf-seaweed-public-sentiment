@@ -20,25 +20,25 @@ def main():
     print('loaded...')
     init_db()
     session = SessionLocal()
-    headlines = [
-        result[0] for result in
-        session.query(distinct(Article.headline)).all()]
-    print(headlines)
-    print('doing sentiment-analysis')
-    headline_sentiment_result = headline_sentiment_model(headlines)
+    headlines_without_ai = [
+        article.headline for article in
+        session.query(Article).outerjoin(AIResultHeadline, Article.id_key == AIResultHeadline.article_id)
+        .filter(AIResultHeadline.id_key == None)
+        .all()]
+    print(f'doing sentiment-analysis on {len(headlines_without_ai)} headlines')
+    headline_sentiment_result = headline_sentiment_model(headlines_without_ai)
 
     print('updating headline sentiment in database')
     for headline, headline_sentiment_result in zip(
-            headlines, headline_sentiment_result):
+            headlines_without_ai, headline_sentiment_result):
         print(headline)
-        headline_sentiment_entry = AIResultHeadline(
-            value=HEADLINE_LABEL_TO_SENTIMENT[
-                headline_sentiment_result['label']],
-            score=headline_sentiment_result['score'])
         same_headline_articles = session.query(Article).filter(
             Article.headline == headline).all()
         for article in same_headline_articles:
-            article.headline_sentiment_ai = headline_sentiment_entry
+            article.headline_sentiment_ai = AIResultHeadline(
+                value=HEADLINE_LABEL_TO_SENTIMENT[
+                    headline_sentiment_result['label']],
+                score=headline_sentiment_result['score'])
 
     session.commit()
     session.close()
