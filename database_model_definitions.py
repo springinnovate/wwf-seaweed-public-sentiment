@@ -1,5 +1,4 @@
 """Database definitions for news articles and their classifications."""
-from datetime import date
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
