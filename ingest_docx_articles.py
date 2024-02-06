@@ -48,36 +48,11 @@ def parse_docx(file_path):
             break
         body_text += text
 
-    result = {
-        'subject': '',
-        'industry': '',
-        'geographic': '',
-        'load-date': '',
-        'headline': headline_text,
-        'body': body_text,
-        'publication': publication_text,
-        'date': date_text,
-    }
-
-    try:
-        result['year'] = int(re.search(r'\d{4}', date_text).group())
-    except AttributeError:
-        result['year'] = None
-
-    for text in paragaph_iter:
-        tag = text.split(':')[0].lower()
-        if tag in result:
-            result[tag] = '.'.join(text.split(':')[1:]).replace(
-                '\xa0', ' ').strip()
-
     print(f'time to parse = {time.time()-start_time}s')
-    print(result)
-
     new_article = Article(
         headline=headline_text,
         body=body_text,
         date=date_text,
-        year=result['year'],
         publication=publication_text,
         source_file=file_path,
         )

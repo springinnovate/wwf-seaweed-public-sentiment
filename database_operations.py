@@ -2,6 +2,7 @@
 from database_model_definitions import Article
 from typing import List
 
+
 def upsert_articles(session, article_list: List[Article]):
     for new_article in article_list:
         # Check if an article with the same headline, body, date, and publication exists
@@ -25,5 +26,4 @@ def upsert_articles(session, article_list: List[Article]):
         else:
             # Add as a new article
             session.add(new_article)
-
     session.commit()

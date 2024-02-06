@@ -5,7 +5,7 @@ import re
 import time
 
 from pypdf import PdfReader
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
 from database_model_definitions import Article
 from database_operations import upsert_articles
@@ -28,33 +28,15 @@ def parse_pdf(file_path):
         body_text = articles_text[match.span()[1]:body_end_index]
         headline_text = ' '.join(headline_text.split('\n')).strip()
         body_end_index = match.span()[0]
-        result = {
-            'subject': '',
-            'industry': '',
-            'geographic': '',
-            'load-date': '',
-            'headline': headline_text,
-            'body': body_text,
-            'publication': publication_text,
-            'date': date_text,
-            'source_file': file_path,
-        }
-
-        try:
-            result['year'] = re.search(r'\d{4}', date_text).group()
-        except AttributeError:
-            result['year'] = 'unknown'
-
-        print(f'time to parse = {time.time()-start_time}s')
-        print(result)
-
         new_article = Article(
             headline=headline_text,
             body=body_text,
             date=date_text,
-            publication=publication_text
+            publication=publication_text,
+            source_file=file_path,
             )
         new_article_list.append(new_article)
+    print(f'time to parse {file_path} = {time.time()-start_time:.1f}s')
     return new_article_list
 
 
@@ -66,12 +48,13 @@ def main():
     init_db()
     db = SessionLocal()
 
-    with ThreadPoolExecutor() as executor:
+    with ProcessPoolExecutor() as executor:
         future_list = []
         for index, file_path in enumerate(glob.glob(args.path_to_files)):
             future = executor.submit(parse_pdf, file_path)
             future_list.append(future)
-        article_list = [article for future in future_list for article in future.result()]
+        article_list = [
+            article for future in future_list for article in future.result()]
     upsert_articles(db, article_list)
     db.commit()
     db.close()
