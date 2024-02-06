@@ -8,6 +8,7 @@ from pypdf import PdfReader
 from concurrent.futures import ThreadPoolExecutor
 
 from database_model_definitions import Article
+from datbase_operations import upsert_articles
 from database import SessionLocal, init_db
 
 RE_TEXT = '(.*(?:\n[^\n]+)+)\n\n(\S* \d{1,2}, \d{4}) \| (.*)'
@@ -71,7 +72,7 @@ def main():
             future = executor.submit(parse_pdf, file_path)
             future_list.append(future)
         article_list = [article for future in future_list for article in future.result()]
-    db.add_all(article_list)
+    upsert_articles(db, article_list)
     db.commit()
     db.close()
 
