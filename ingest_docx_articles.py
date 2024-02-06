@@ -5,7 +5,7 @@ import re
 import time
 
 from docx import Document
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
 from database_model_definitions import Article
 from database_operations import upsert_articles
@@ -67,12 +67,13 @@ def main():
     init_db()
     db = SessionLocal()
 
-    with ThreadPoolExecutor() as executor:
+    with ProcessPoolExecutor() as executor:
         future_list = []
         for index, file_path in enumerate(glob.glob(args.path_to_files)):
             future = executor.submit(parse_docx, file_path)
             future_list.append(future)
         article_list = [future.result() for future in future_list]
+    print(f'upserting {len(article_list)} articles')
     upsert_articles(db, article_list)
 
     db.commit()
