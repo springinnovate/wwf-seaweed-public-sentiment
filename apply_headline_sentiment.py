@@ -3,7 +3,6 @@ from transformers import pipeline
 
 from database_model_definitions import Article, AIResultHeadline
 from database import SessionLocal, init_db
-from sqlalchemy import distinct
 
 MODEL_PATH = 'wwf-seaweed-headline-sentiment/microsoft-deberta-v3-base_6'
 HEADLINE_LABEL_TO_SENTIMENT = {
