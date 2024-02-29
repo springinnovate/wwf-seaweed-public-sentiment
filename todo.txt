@@ -1,15 +1,13 @@
 TODO:
 x Ingest the PDF list
-* DB "clean" script, to de-duplicate
-* Ingest the froueleich headlines w/ sentiment
-* de-duplicate headlines
-* apply headline sentiment to all headlines
-    * report
-        * summary in presentation
-        * raw results to whomever wants them
-
-
-
+x DB "clean" script, to de-duplicate
+x de-duplicate headlines
+x apply headline sentiment to all headlines
+x Ingest the froueleich headlines w/ sentiment
+x parse out year
+* report headline sentiment
+    * summary in presentation
+    * raw results to whomever wants them
 
 
 x parse through Dan's word doc papers for the up-to-date info, that's on bigboi under "data" now

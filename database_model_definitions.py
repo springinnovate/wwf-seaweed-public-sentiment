@@ -1,5 +1,4 @@
 """Database definitions for news articles and their classifications."""
-from datetime import date
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
@@ -21,9 +20,12 @@ class Article(Base):
     date: Mapped[str]
     year: Mapped[Optional[int]]
     publication: Mapped[str]
-    headline_sentiment_ai: Mapped[Optional["AIResultHeadline"]] = relationship(back_populates="article")
-    body_subject_ai: Mapped[Optional[List["AIResultBody"]]] = relationship(back_populates="article")
-    geographic_location_ai: Mapped[Optional[List["AIResultLocation"]]] = relationship(back_populates="article")
+    headline_sentiment_ai: Mapped[Optional["AIResultHeadline"]] = relationship(
+        back_populates="article")
+    body_subject_ai: Mapped[Optional[List["AIResultBody"]]] = relationship(
+        back_populates="article")
+    geographic_location_ai: Mapped[Optional[List["AIResultLocation"]]] = relationship(
+        back_populates="article")
     ground_truth_headline_sentiment: Mapped[Optional[str]]
     ground_truth_body_subject: Mapped[Optional[str]]
     ground_truth_body_location: Mapped[Optional[str]]
@@ -54,4 +56,5 @@ class AIResultLocation(Base):
     article_id = mapped_column(ForeignKey("article.id_key"))
     value: Mapped[str]
     score: Mapped[float]
-    article: Mapped[Article] = relationship(back_populates="geographic_location_ai")
+    article: Mapped[Article] = relationship(
+        back_populates="geographic_location_ai")
