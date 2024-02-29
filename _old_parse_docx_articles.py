@@ -4,12 +4,10 @@ import glob
 import re
 import time
 
-import pandas
 from docx import Document
 from transformers import pipeline
 from concurrent.futures import ThreadPoolExecutor
 
-from sqlalchemy.orm import Session
 from database_model_definitions import Article, AIResultHeadline
 from database import SessionLocal, init_db
 
