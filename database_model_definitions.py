@@ -29,6 +29,8 @@ class Article(Base):
     ground_truth_headline_sentiment: Mapped[Optional[str]]
     ground_truth_body_subject: Mapped[Optional[str]]
     ground_truth_body_location: Mapped[Optional[str]]
+    user_classified_body_subject: Mapped[Optional[str]]
+    user_classified_body_location: Mapped[Optional[str]]
     source_file: Mapped[Optional[str]]
 
 
