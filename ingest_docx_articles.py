@@ -2,6 +2,7 @@
 import argparse
 import glob
 import time
+import re
 
 from docx import Document
 from concurrent.futures import ProcessPoolExecutor
@@ -13,7 +14,7 @@ from database import SessionLocal, init_db
 
 def parse_docx(file_path):
     start_time = time.time()
-    print(f'parsing {file_path}')
+    #print(f'parsing {file_path}')
 
     class Parser:
         def __init__(self):
@@ -47,6 +48,16 @@ def parse_docx(file_path):
             break
         body_text += text
 
+    relevant_subjects = []
+    locations = []
+    for line in paragaph_iter:
+        if line.startswith('Subject:\xa0'):
+            subjects = re.findall(r'([A-Z][A-Z&\s]+)\s\(\d+%\)', line)
+            relevant_subjects = [subject for subject in subjects]
+        if line.startswith('Geographic'):
+            locations = re.findall(r'([A-Z][A-Z&\s,]+)\s\(\d+%\)', line)
+    relevant_subject_str = ', '.join(relevant_subjects)
+    location_str = '; '.join(locations)
     print(f'time to parse = {time.time()-start_time}s')
     new_article = Article(
         headline=headline_text,
@@ -54,6 +65,8 @@ def parse_docx(file_path):
         date=date_text,
         publication=publication_text,
         source_file=file_path,
+        ground_truth_body_subject=relevant_subject_str,
+        ground_truth_body_location=location_str,
         )
     return new_article
 
