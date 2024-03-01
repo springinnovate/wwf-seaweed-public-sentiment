@@ -61,7 +61,7 @@ def map_label_to_word(label):
 
 
 def compute_metrics(eval_pred):
-    print(eval_pred)
+    print(f'eval_pred: {eval_pred}')
     load_accuracy = load_metric("accuracy", trust_remote_code=True)
     load_f1 = load_metric("f1", trust_remote_code=True)
 
