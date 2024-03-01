@@ -159,7 +159,6 @@ def main():
             'bad',
             ])
 
-    # Replace NaN values with 0 for visualization
     data_filled = result_by_year.fillna(0)
 
     # Calculate total sentiments per year for percentage calculation

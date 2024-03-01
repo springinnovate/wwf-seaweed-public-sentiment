@@ -1,7 +1,6 @@
 """Tracer code to figure out how to parse out DocX files."""
 import argparse
 import glob
-import re
 import time
 
 from docx import Document
