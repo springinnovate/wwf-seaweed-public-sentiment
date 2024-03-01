@@ -74,7 +74,6 @@ def compute_metrics(eval_pred):
 
 def _make_preprocess_function(tokenizer):
     def _preprocess_function(examples):
-        LOGGER.debug(f'this is the xample coming in: "{examples[DATA_KEY]}"')
         return tokenizer(examples[DATA_KEY], truncation=True, padding='max_length', max_length=50)
     return _preprocess_function
 
@@ -155,7 +154,7 @@ def main():
     df['labels'] = df.apply(map_labels(subjects_to_labels, LABEL_KEY), axis=1)
     body_dataset = Dataset.from_pandas(df)
     dataset = body_dataset.train_test_split(test_size=0.2)
-    print(dataset)
+    LOGGER.debug(f'this is hwo the dataset is broken down: {dataset}')
     repo_name = "wwf-seaweed-body-subject"
     training_args = TrainingArguments(
        output_dir=repo_name,
