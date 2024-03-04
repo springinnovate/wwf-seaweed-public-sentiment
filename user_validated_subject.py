@@ -15,7 +15,7 @@ from sqlalchemy import func
 
 OPTIONS = {
     index: key for index, key in enumerate(
-        ['AQUACULTURE', 'SEAWEED AQUACULTURE', 'OTHER'])
+        ['OTHER', 'AQUACULTURE', 'SEAWEED AQUACULTURE'])
 }
 
 
@@ -81,10 +81,23 @@ def get_user_choice(options, existing_subject):
             return None
 
 
+def highlight_keywords(body_text, keywords):
+    highlighted_text = ""
+    for word in body_text.split():
+        for keyword in keywords:
+            if keyword.lower() in word.lower():
+                # Apply bold and highlighted background color
+                highlighted_text += f"\033[1;48;5;231m{word}\033[0m "
+        else:
+            highlighted_text += f"{word} "
+    return highlighted_text
+
+
 def main():
 
     init_db()
     session = SessionLocal()
+    keywords = ['seaweed', 'aquaculture', 'kelp', 'fish', 'farm']
 
     last_article = None
     choice = None
@@ -93,7 +106,11 @@ def main():
             existing_article = session.query(Article).filter(
                 Article.user_classified_body_subject == None
             ).order_by(func.random()).first()
-        print(existing_article.body)
+        body = existing_article.body
+        if body is None:
+            continue
+        print(highlight_keywords(
+            body.strip(), keywords))
         choice = get_user_choice(
             OPTIONS, existing_article.user_classified_body_subject)
         print(choice)
