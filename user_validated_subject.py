@@ -15,7 +15,7 @@ from sqlalchemy import func
 
 OPTIONS = {
     index: key for index, key in enumerate(
-        ['OTHER', 'AQUACULTURE', 'SEAWEED AQUACULTURE'])
+        ['NOT NEWS', 'AQUACULTURE', 'SEAWEED AQUACULTURE', 'NOT AQUACULTURE', 'UNKNOWN'])
 }
 
 
@@ -88,6 +88,7 @@ def highlight_keywords(body_text, keywords):
             if keyword.lower() in word.lower():
                 # Apply bold and highlighted background color
                 highlighted_text += f"\033[1;48;5;231m{word}\033[0m "
+                break
         else:
             highlighted_text += f"{word} "
     return highlighted_text
@@ -122,8 +123,8 @@ def main():
         else:
             existing_article.user_classified_body_subject = '; '.join(choice)
         last_article = existing_article
+        session.commit()
 
-    #session.commit()
     session.close()
 
 
