@@ -8,6 +8,7 @@ import argparse
 import collections
 import os
 
+from database_model_definitions import USER_CLASSIFIED_BODY_OPTIONS
 from datasets import Dataset
 from datasets import load_metric
 from huggingface_hub import login
@@ -47,7 +48,14 @@ LABEL_KEY = 'subject'
 
 def map_labels(label_dict, key):
     def _map_labels(row):
-        return label_dict[row[key]]
+        # give me the first hit by priority
+        for label_index, label in sorted(label_dict.items()):
+            LOGGER.debug(f'***** {label.lower()} vs {row[key].lower()}')
+            if label.lower() in row[key].lower():
+                LOGGER.debug('TRUEEEEEEEEEEE')
+
+                return label_index
+        return None
     return _map_labels
 
 
@@ -67,6 +75,7 @@ def compute_metrics(eval_pred):
 
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
+    LOGGER.debug(f'************* in compute metrics: logits: {logits}, labels: {labels}')
     accuracy = load_accuracy.compute(predictions=predictions, references=labels)["accuracy"]
     f1 = load_f1.compute(predictions=predictions, references=labels, average='weighted')["f1"]
     return {"accuracy": accuracy, "f1": f1}
@@ -135,23 +144,22 @@ def main():
     """Entry point."""
     session = SessionLocal()
     subjects_bodies = [
-        (article.ground_truth_body_subject, article.body) for article in
+        (article.user_classified_body_subject, article.body) for article in
         session.query(Article).filter(
             Article.body != None,
-            Article.ground_truth_body_subject != None)
+            Article.user_classified_body_subject != None,
+            Article.user_classified_body_subject != '')
         .all()]
 
     # Create a DataFrame
     df = pandas.DataFrame(subjects_bodies, columns=[LABEL_KEY, DATA_KEY])
-    unique_subjects = session.query(Article.ground_truth_body_subject).filter(
-        Article.ground_truth_body_subject != None
-        ).distinct().all()
 
     # Extract the values from the result
-    subjects_to_labels = {
-        subject[0]: index for index, subject in enumerate(unique_subjects)
+    labels_to_subjects = {
+        index: subject for index, subject in enumerate(USER_CLASSIFIED_BODY_OPTIONS)
     }
-    df['labels'] = df.apply(map_labels(subjects_to_labels, LABEL_KEY), axis=1)
+    df['labels'] = df.apply(map_labels(labels_to_subjects, LABEL_KEY), axis=1)
+    df.to_csv('out.csv')
     body_dataset = Dataset.from_pandas(df)
     dataset = body_dataset.train_test_split(test_size=0.2)
     LOGGER.debug(f'this is hwo the dataset is broken down: {dataset}')
@@ -163,7 +171,8 @@ def main():
        num_train_epochs=1,
        weight_decay=0.01,
        save_strategy="epoch",
-       push_to_hub=False
+       push_to_hub=False,
+       gradient_accumulation_steps=32,
     )
     #model = pipeline('text-classification', device='cpu')
     model_performance = open('modelperform.csv', 'w')
@@ -179,7 +188,7 @@ def main():
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
         model = AutoModelForSequenceClassification.from_pretrained(
-            model_id, num_labels=len(subjects_to_labels))
+            model_id, num_labels=len(labels_to_subjects))
         optimizer = Adafactor(
             model.parameters(),
             scale_parameter=True,

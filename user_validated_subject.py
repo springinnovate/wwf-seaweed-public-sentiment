@@ -9,13 +9,13 @@ from prompt_toolkit.styles import Style
 from pygments.lexers import PythonLexer
 
 from database_model_definitions import Article
+from database_model_definitions import USER_CLASSIFIED_BODY_OPTIONS
 from database_operations import upsert_articles
 from database import SessionLocal, init_db
 from sqlalchemy import func
 
 OPTIONS = {
-    index: key for index, key in enumerate(
-        ['NOT NEWS', 'AQUACULTURE', 'SEAWEED AQUACULTURE', 'NOT AQUACULTURE', 'UNKNOWN'])
+    index: key for index, key in enumerate(USER_CLASSIFIED_BODY_OPTIONS)
 }
 
 
@@ -71,7 +71,6 @@ def get_user_choice(options, existing_subject):
     while True:
         try:
             print_options(options, selected)
-            #session.prompt("Press the number keys to select options, or press Enter to confirm: ", key_bindings=bindings)
             print("Press the number keys to select options, 'b' to go back, or press Enter to confirm: ", end='', flush=True)
             session.prompt("", key_bindings=bindings, default='')
             if isinstance(choice, str):
@@ -121,7 +120,7 @@ def main():
             existing_article = last_article
             continue
         else:
-            existing_article.user_classified_body_subject = '; '.join(choice)
+            existing_article.user_classified_body_subject = ';'.join(choice)
         last_article = existing_article
         session.commit()
 
