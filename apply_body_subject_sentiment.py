@@ -14,7 +14,7 @@ BODY_LABEL_TO_SENTIMENT = {
 def main():
     print(f'load {MODEL_PATH}')
     headline_sentiment_model = pipeline(
-        'sentiment-analysis', model=MODEL_PATH, device='cuda')
+        'sentiment-analysis', model=MODEL_PATH, device='cuda', truncation=True)
     print('loaded...')
     init_db()
     session = SessionLocal()
