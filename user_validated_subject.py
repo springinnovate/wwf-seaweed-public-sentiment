@@ -1,16 +1,8 @@
-import glob
-import time
-import re
-
 from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.lexers import PygmentsLexer
-from prompt_toolkit.styles import Style
-from pygments.lexers import PythonLexer
 
 from database_model_definitions import Article
 from database_model_definitions import USER_CLASSIFIED_BODY_OPTIONS
-from database_operations import upsert_articles
 from database import SessionLocal, init_db
 from sqlalchemy import func
 
@@ -97,7 +89,13 @@ def main():
 
     init_db()
     session = SessionLocal()
-    keywords = ['seaweed', 'aquaculture', 'kelp', 'fish', 'farm']
+    keywords = [
+        'seaweed', 'aquaculture', 'kelp', 'fish', 'farm',
+        'sea moss', 'cultivat', 'dulse', 'sea grapes',
+        'red algae', 'irish moss', 'sea lettuce', 'kombu', 'wakame',
+        'laverbread', 'laver', 'carrageen', 'arame', 'gracilaria',
+        'nori nei', 'porphyra', 'laminaria', 'eucheuma', 'nori',
+        'saccharina', 'kappaphycus', 'undaria', 'sargassum', 'hiziki']
 
     last_article = None
     choice = None

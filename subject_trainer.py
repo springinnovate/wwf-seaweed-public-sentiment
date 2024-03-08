@@ -1,10 +1,9 @@
 """Trainer for seaweed subject analysis."""
-from database_model_definitions import Article, AIResultHeadline
-from database import SessionLocal, init_db
+from database_model_definitions import Article
+from database import SessionLocal
 
 import logging
 import sys
-import argparse
 import collections
 import os
 
@@ -19,7 +18,6 @@ from transformers import AutoTokenizer
 from transformers import DataCollatorWithPadding
 from transformers import TrainingArguments, Trainer
 from transformers.optimization import AdafactorSchedule
-from transformers import pipeline
 import numpy as np
 import pandas
 import torch

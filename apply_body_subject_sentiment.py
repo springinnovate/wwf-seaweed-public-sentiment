@@ -4,7 +4,7 @@ from transformers import pipeline
 from database_model_definitions import Article, AIResultBody, USER_CLASSIFIED_BODY_OPTIONS
 from database import SessionLocal, init_db
 
-MODEL_PATH = 'wwf-seaweed-body-subject/allenai-longformer-base-4096_21'
+MODEL_PATH = 'wwf-seaweed-body-subject/allenai-longformer-base-4096_18'
 BODY_LABEL_TO_SENTIMENT = {
     f'LABEL_{index}': label
     for index, label in enumerate(USER_CLASSIFIED_BODY_OPTIONS)
@@ -21,7 +21,10 @@ def main():
     bodies_without_ai = [
         article.body for article in
         session.query(Article).outerjoin(AIResultBody, Article.id_key == AIResultBody.article_id)
-        .filter(AIResultBody.id_key == None)
+        .filter(
+            AIResultBody.id_key == None,
+            Article.body != None,
+            Article.body != '')
         .all()]
     print(f'doing sentiment-analysis on {len(bodies_without_ai)} headlines')
     headline_sentiment_result_list = [

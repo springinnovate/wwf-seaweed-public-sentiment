@@ -3,7 +3,8 @@ import collections
 
 import pandas
 import seaborn as sns
-from database_model_definitions import Article
+from database_model_definitions import Article, AIResultBody, USER_CLASSIFIED_BODY_OPTIONS
+from database_operations import filter_classified_body_by_order
 from database import SessionLocal, init_db
 import matplotlib.pyplot as plt
 from sqlalchemy import distinct
@@ -12,6 +13,91 @@ from sqlalchemy import distinct
 def main():
     init_db()
     session = SessionLocal()
+
+    # build a AI subject body confusion matrix
+    results = session.query(Article.user_classified_body_subject, AIResultBody.value).join(Article).filter(
+        Article.user_classified_body_subject.isnot(None)).all()
+    subject_confusion_matrix = collections.defaultdict(
+        lambda: collections.defaultdict(int))
+    for ground_truth_subject_str, classified_subject in results:
+        primary_ground_truth = filter_classified_body_by_order(
+            ground_truth_subject_str)
+        subject_confusion_matrix[primary_ground_truth][classified_subject] += 1
+    print(subject_confusion_matrix)
+
+    subject_confusing_matrix_path = 'subject_confusion_matrix.csv'
+    with open(subject_confusing_matrix_path, 'w') as confusion_matrix_table:
+        confusion_matrix_table.write(
+            'modeled vs ground truth,' + ','.join(USER_CLASSIFIED_BODY_OPTIONS) + '\n')
+        for classified_subject in USER_CLASSIFIED_BODY_OPTIONS:
+            confusion_matrix_table.write(f'{classified_subject},')
+            for index, ground_truth in enumerate(USER_CLASSIFIED_BODY_OPTIONS):
+                total = sum([
+                    subject_confusion_matrix[ground_truth][local_modeled]
+                    for local_modeled in USER_CLASSIFIED_BODY_OPTIONS])
+                count = subject_confusion_matrix[ground_truth][classified_subject]
+                confusion_matrix_table.write(
+                    f'{count} ({count/total*100:.1f}%)')
+                if index < len(USER_CLASSIFIED_BODY_OPTIONS)-1:
+                    confusion_matrix_table.write(',')
+            confusion_matrix_table.write('\n')
+
+    plt.figure(figsize=(7, 5))
+
+    # Load the confusion matrix CSV file into a DataFrame
+    cm_subject_data = pandas.read_csv(subject_confusing_matrix_path, sep=',')
+    print(cm_subject_data.head())
+    # Extracting counts from the DataFrame
+    # We'll use a regular expression to extract counts before the parentheses and convert them to integers
+    cm_counts = cm_subject_data.apply(lambda x: x.str.extract('(\d+)')[0]).fillna(0).astype(int)
+
+    # Dropping the first column since it's the labels for the rows
+    cm_counts_values = cm_counts.iloc[:, 1:].values
+
+    # Labels for the axes
+    labels = cm_subject_data.columns[1:].tolist()  # Ground truth labels
+    predicted_labels = cm_subject_data.iloc[:, 0].tolist()  # Modeled/predicted labels
+
+    cm_percentages = cm_subject_data.apply(lambda x: x.str.extract('\((.*?)%\)', expand=False))
+    cm_annotations = (cm_counts.iloc[:, 1:].astype(str) + " (" + cm_percentages.iloc[:, 1:] + "%)").values
+
+    sns.heatmap(cm_counts_values, annot=cm_annotations, fmt="", cmap="Blues", xticklabels=labels, yticklabels=predicted_labels, cbar=False)
+    plt.title('Confusion Matrix (Manually Classified vs Modeled)')
+    plt.xlabel('Manually Classified')
+    plt.ylabel('Modeled')
+    plt.xticks(rotation=45, ha="center")
+    plt.yticks(rotation=0)
+
+    # Moving the ground truth labels to the top
+    ax = plt.gca()
+    ax.xaxis.tick_top()
+    ax.xaxis.set_label_position('top')
+
+    plt.show()
+
+    return
+
+    # Then report headline classifications over time based on
+    # OTHER AQUACULTURE and SEAWEED AQUACULTURE
+    for article in session.query(Article).filter(
+            Article.user_classified_body_subject.isnot(None)).all():
+        if article.headline in processed_headline_set:
+            continue
+        processed_headline_set.add(article.headline)
+        confusion_matrix[
+            article.ground_truth_headline_sentiment][
+            article.headline_sentiment_ai.value] += 1
+        data_dict['headline'].append(article.headline)
+        data_dict['Froelich et al. 2017 sentiment'].append(
+            article.ground_truth_headline_sentiment)
+        data_dict['modeled sentiment'].append(
+            article.headline_sentiment_ai.value)
+        data_dict['modeled confidence'].append(
+            article.headline_sentiment_ai.score)
+
+
+    # Report headlines per subject type other aquacuture/seaweed aquaculture
+
 
     confusion_matrix = collections.defaultdict(
         lambda: collections.defaultdict(int))
