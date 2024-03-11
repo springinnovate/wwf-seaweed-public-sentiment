@@ -4,7 +4,7 @@ from transformers import pipeline
 from database_model_definitions import Article, AIResultBody, USER_CLASSIFIED_BODY_OPTIONS
 from database import SessionLocal, init_db
 
-MODEL_PATH = 'wwf-seaweed-body-subject/allenai-longformer-base-4096_18'
+MODEL_PATH = 'wwf-seaweed-body-subject/allenai-longformer-base-4096_13'
 BODY_LABEL_TO_SENTIMENT = {
     f'LABEL_{index}': label
     for index, label in enumerate(USER_CLASSIFIED_BODY_OPTIONS)
