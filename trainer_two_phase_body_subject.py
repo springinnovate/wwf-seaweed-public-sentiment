@@ -37,22 +37,28 @@ with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
     access_token_write = file.readline().strip()
     login(access_token_write, write_permission=True)
 
-MODELS_TO_TEST = [
-    'allenai/longformer-base-4096',
-    ]
+MODEL_ID = 'allenai/longformer-base-4096'
 DATA_KEY = 'body'
 LABEL_KEY = 'subject'
+RELEVANT_SUBJECT_TO_LABEL = {
+    'SEAWEED AQUACULTURE': 0,
+    'OTHER AQUACULTURE': 0,
+    'NOT NEWS': 1,
+    'NOT ENGLISH': 1,
+    'NOT AQUACULTURE': 1,
+}
+AQUACULTURE_SUBJECT_TO_LABEL = {
+    'SEAWEED AQUACULTURE': 0,
+    'OTHER AQUACULTURE': 1,
+}
 
 
-def map_labels(label_dict, key):
+def map_labels(subject_to_label_dict, key):
     def _map_labels(row):
         # give me the first hit by priority
-        for label_index, label in sorted(label_dict.items()):
-            LOGGER.debug(f'***** {label.lower()} vs {row[key].lower()}')
-            if label.lower() in row[key].lower():
-                LOGGER.debug('TRUEEEEEEEEEEE')
-
-                return label_index
+        for subject, label in sorted(subject_to_label_dict.items()):
+            if subject.lower() in row[key].lower():
+                return label
         return None
     return _map_labels
 
@@ -138,8 +144,42 @@ def test_model(dataset, checkpoint_path_list):
         print(f'{checkpoint_path} done')
 
 
+RELEVANT_SUBJECT_TAGS = {
+    'OTHER AQUACULTURE',
+    'SEAWEED AQUACULTURE'
+}
+
+IRRELEVANT_SUBJECT_TAGS = {
+    'NOT NEWS',
+    'NOT ENGLISH',
+    'NOT AQUACULTURE',
+}
+
+SEAWEED_TAG = 'SEAWEED AQUACULTURE'
+AQUACULTURE_TAG = 'OTHER AQUACULTURE'
+
 def main():
     """Entry point."""
+    """
+    Column is user_classified_body_subject, the values are:
+
+    We want two phase
+
+    relevant
+        * OTHER AQUACULTURE
+        * SEAWEED AQUACULTURE
+    irrelevant
+        * NOT NEWS
+        * NOT ENGLISH
+        * NOT AQUACULTURE
+
+    Then subject:
+        * OTHER AQUACULTURE
+        * SEAWEED AQUACULTURE
+
+    Train relevant/irrelevant model
+    Train seaweed/other model
+    """
     session = SessionLocal()
     subjects_bodies = [
         (article.user_classified_body_subject, article.body) for article in
@@ -149,36 +189,34 @@ def main():
             Article.user_classified_body_subject != '')
         .all()]
 
-    # Create a DataFrame
-    df = pandas.DataFrame(subjects_bodies, columns=[LABEL_KEY, DATA_KEY])
+    for classification_phase, subject_to_label in [
+            ('relevant-irrelevant', RELEVANT_SUBJECT_TO_LABEL),
+            ('aquaculture-type', AQUACULTURE_SUBJECT_TO_LABEL)]:
+        df = pandas.DataFrame(subjects_bodies, columns=[LABEL_KEY, DATA_KEY])
+        df['labels'] = df.apply(
+            map_labels(subject_to_label, LABEL_KEY), axis=1)
+        df = df.dropna(subset=['labels'])
+        df.to_csv(f'{classification_phase}_out.csv')
+        body_dataset = Dataset.from_pandas(df)
+        dataset = body_dataset.train_test_split(test_size=0.2)
+        LOGGER.debug(f'this is how the dataset is broken down: {dataset}')
+        repo_name = f"wwf-seaweed-body-subject-{classification_phase}"
+        training_args = TrainingArguments(
+           output_dir=repo_name,
+           per_device_train_batch_size=1,
+           per_device_eval_batch_size=1,
+           num_train_epochs=1,
+           weight_decay=0.01,
+           save_strategy="epoch",
+           push_to_hub=False,
+           gradient_accumulation_steps=32,
+        )
+        model_performance = open(
+            f'modelperform-{classification_phase}.csv', 'w')
 
-    # Extract the values from the result
-    labels_to_subjects = {
-        index: subject for index, subject in enumerate(USER_CLASSIFIED_BODY_OPTIONS)
-    }
-    df['labels'] = df.apply(map_labels(labels_to_subjects, LABEL_KEY), axis=1)
-    df.to_csv('out.csv')
-    body_dataset = Dataset.from_pandas(df)
-    dataset = body_dataset.train_test_split(test_size=0.2)
-    LOGGER.debug(f'this is how the dataset is broken down: {dataset}')
-    repo_name = "wwf-seaweed-body-subject"
-    training_args = TrainingArguments(
-       output_dir=repo_name,
-       per_device_train_batch_size=1,
-       per_device_eval_batch_size=1,
-       num_train_epochs=1,
-       weight_decay=0.01,
-       save_strategy="epoch",
-       push_to_hub=False,
-       gradient_accumulation_steps=32,
-    )
-    #model = pipeline('text-classification', device='cpu')
-    model_performance = open('modelperform.csv', 'w')
-
-    for model_id in MODELS_TO_TEST:
-        print(f'TRAINING ON: {model_id}')
+        print(f'TRAINING ON: {MODEL_ID} / {classification_phase}')
         tokenizer = AutoTokenizer.from_pretrained(
-            model_id, token=access_token_write)
+            MODEL_ID, token=access_token_write)
         tokenized_train = dataset['train'].map(
             _make_preprocess_function(tokenizer), batched=True)
         tokenized_test = dataset['test'].map(
@@ -186,7 +224,7 @@ def main():
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
         model = AutoModelForSequenceClassification.from_pretrained(
-            model_id, num_labels=len(labels_to_subjects))
+            MODEL_ID, num_labels=max(subject_to_label.values()))
         optimizer = Adafactor(
             model.parameters(),
             scale_parameter=True,
@@ -196,7 +234,7 @@ def main():
         )
         lr_scheduler = AdafactorSchedule(optimizer)
 
-        model_performance.write(f'\n{model_id}\n')
+        model_performance.write(f'\n{MODEL_ID}-{classification_phase}\n')
         model_performance.write('eval_loss,eval_accuracy\n')
         trainer = Trainer(
            model=model,
@@ -225,8 +263,8 @@ def main():
                 increase_loss_count = 0
                 lowest_loss = eval_results['eval_loss']
             lowest_loss = eval_results['eval_loss']
-            trainer.save_model(f"{repo_name}/{model_id.replace('/','-')}_{epoch+1}")
-    model_performance.close()
+            trainer.save_model(f"{repo_name}/{MODEL_ID.replace('/','-')}_{epoch+1}")
+        model_performance.close()
 
 
 if __name__ == '__main__':
