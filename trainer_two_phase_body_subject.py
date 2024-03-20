@@ -223,9 +223,10 @@ def main():
             _make_preprocess_function(tokenizer), batched=True)
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
+        num_labels = max(subject_to_label.values())+1
         print(f'NMODELS: {max(subject_to_label.values())}')
         model = AutoModelForSequenceClassification.from_pretrained(
-            MODEL_ID, num_labels=max(subject_to_label.values()))
+            MODEL_ID, num_labels=num_labels)
         optimizer = Adafactor(
             model.parameters(),
             scale_parameter=True,
