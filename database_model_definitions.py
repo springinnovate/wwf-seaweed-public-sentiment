@@ -7,6 +7,15 @@ from sqlalchemy.orm import relationship
 from typing import List
 from typing import Optional
 
+# sorted in order of priority
+USER_CLASSIFIED_BODY_OPTIONS = [
+    'NOT ENGLISH',
+    'NOT NEWS',
+    'NOT AQUACULTURE',
+    'SEAWEED AQUACULTURE',
+    'OTHER AQUACULTURE',
+]
+
 
 class Base(DeclarativeBase):
     pass
@@ -29,6 +38,8 @@ class Article(Base):
     ground_truth_headline_sentiment: Mapped[Optional[str]]
     ground_truth_body_subject: Mapped[Optional[str]]
     ground_truth_body_location: Mapped[Optional[str]]
+    user_classified_body_subject: Mapped[Optional[str]]
+    user_classified_body_location: Mapped[Optional[str]]
     source_file: Mapped[Optional[str]]
 
 

@@ -1,7 +1,12 @@
 """Database definitions for news articles and their classifications."""
-from database_model_definitions import Article
+from database_model_definitions import Article, USER_CLASSIFIED_BODY_OPTIONS
 from typing import List
 
+
+def filter_classified_body_by_order(string_of_classified):
+    for classification in USER_CLASSIFIED_BODY_OPTIONS:
+        if classification in string_of_classified:
+            return classification
 
 def upsert_articles(session, article_list: List[Article]):
     for new_article in article_list:
