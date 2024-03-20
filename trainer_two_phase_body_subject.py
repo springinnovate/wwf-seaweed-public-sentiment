@@ -224,7 +224,7 @@ def main():
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
         num_labels = max(subject_to_label.values())+1
-        print(f'NMODELS: {max(subject_to_label.values())}')
+        print(f'NMODELS: {num_labels}')
         model = AutoModelForSequenceClassification.from_pretrained(
             MODEL_ID, num_labels=num_labels)
         optimizer = Adafactor(
