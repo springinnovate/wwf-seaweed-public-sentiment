@@ -185,6 +185,7 @@ def main():
             ('aquaculture-type', AQUACULTURE_SUBJECT_TO_LABEL),
             ]:
         df = pandas.DataFrame(subjects_bodies, columns=[LABEL_KEY, DATA_KEY])
+        print(f'before: {df}')
         df['labels'] = df.apply(
             map_labels(subject_to_label, LABEL_KEY), axis=1)
         df = df.dropna(subset=['labels'])
