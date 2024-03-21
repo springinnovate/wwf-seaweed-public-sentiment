@@ -187,7 +187,7 @@ def main():
     }
 
     for classification_phase, subject_to_label, reject_set in [
-            #('relevant-irrelevant', RELEVANT_SUBJECT_TO_LABEL, set()),
+            ('relevant-irrelevant', RELEVANT_SUBJECT_TO_LABEL, set()),
             ('aquaculture-type', AQUACULTURE_SUBJECT_TO_LABEL, irrelevant_set),
             ]:
         df = pandas.DataFrame(subjects_bodies, columns=[LABEL_KEY, DATA_KEY])
