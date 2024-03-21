@@ -7,7 +7,8 @@ import sys
 import collections
 import os
 
-from database_model_definitions import USER_CLASSIFIED_BODY_OPTIONS
+from database_model_definitions import RELEVANT_SUBJECT_TO_LABEL
+from database_model_definitions import AQUACULTURE_SUBJECT_TO_LABEL
 from datasets import Dataset
 from datasets import load_metric
 from huggingface_hub import login
@@ -40,17 +41,7 @@ with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
 MODEL_ID = 'allenai/longformer-base-4096'
 DATA_KEY = 'body'
 LABEL_KEY = 'subject'
-RELEVANT_SUBJECT_TO_LABEL = {
-    'SEAWEED AQUACULTURE': 0,
-    'OTHER AQUACULTURE': 0,
-    'NOT NEWS': 1,
-    'NOT ENGLISH': 1,
-    'NOT AQUACULTURE': 1,
-}
-AQUACULTURE_SUBJECT_TO_LABEL = {
-    'SEAWEED AQUACULTURE': 0,
-    'OTHER AQUACULTURE': 1,
-}
+
 
 
 def map_labels(subject_to_label_dict, key):
@@ -190,8 +181,9 @@ def main():
         .all()]
 
     for classification_phase, subject_to_label in [
-            ('relevant-irrelevant', RELEVANT_SUBJECT_TO_LABEL),
-            ('aquaculture-type', AQUACULTURE_SUBJECT_TO_LABEL)]:
+            #('relevant-irrelevant', RELEVANT_SUBJECT_TO_LABEL),
+            ('aquaculture-type', AQUACULTURE_SUBJECT_TO_LABEL),
+            ]:
         df = pandas.DataFrame(subjects_bodies, columns=[LABEL_KEY, DATA_KEY])
         df['labels'] = df.apply(
             map_labels(subject_to_label, LABEL_KEY), axis=1)
