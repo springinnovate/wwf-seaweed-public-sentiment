@@ -194,7 +194,10 @@ def main():
         print(f'before: {df}')
         df['labels'] = df.apply(
             map_labels(subject_to_label, LABEL_KEY, reject_set), axis=1)
-        #df = df.dropna(subset=['labels']).reset_index(drop=True)
+        print(df)
+        df = df.dropna(subset=['labels']).reset_index(drop=True)
+        print(df)
+        continue
 
         df.to_csv(f'{classification_phase}_out.csv')
         body_dataset = Dataset.from_pandas(df)
