@@ -7,7 +7,7 @@ import sys
 import collections
 import os
 
-from database_model_definitions import RELEVANT_SUBJECT_TO_LABEL
+from database_model_definitions import RELEVANT_SUBJECT_TO_LABEL, IRRELEVANT_LABEL
 from database_model_definitions import AQUACULTURE_SUBJECT_TO_LABEL
 from datasets import Dataset
 from datasets import load_metric
@@ -43,11 +43,12 @@ DATA_KEY = 'body'
 LABEL_KEY = 'subject'
 
 
-
-def map_labels(subject_to_label_dict, key):
+def map_labels(subject_to_label_dict, key, reject_set):
     def _map_labels(row):
         # give me the first hit by priority
         for subject, label in sorted(subject_to_label_dict.items()):
+            if subject.lower() in reject_set:
+                return None
             if subject.lower() in row[key].lower():
                 return label
         return None
@@ -180,20 +181,24 @@ def main():
             Article.user_classified_body_subject != '')
         .all()]
 
-    for classification_phase, subject_to_label in [
-            ('relevant-irrelevant', RELEVANT_SUBJECT_TO_LABEL),
-            ('aquaculture-type', AQUACULTURE_SUBJECT_TO_LABEL),
+    irrelevant_set = {
+        subject for subject, label in RELEVANT_SUBJECT_TO_LABEL.items()
+        if label == IRRELEVANT_LABEL
+    }
+
+    for classification_phase, subject_to_label, reject_set in [
+            #('relevant-irrelevant', RELEVANT_SUBJECT_TO_LABEL, set()),
+            ('aquaculture-type', AQUACULTURE_SUBJECT_TO_LABEL, irrelevant_set),
             ]:
         df = pandas.DataFrame(subjects_bodies, columns=[LABEL_KEY, DATA_KEY])
         print(f'before: {df}')
         df['labels'] = df.apply(
-            map_labels(subject_to_label, LABEL_KEY), axis=1)
+            map_labels(subject_to_label, LABEL_KEY, reject_set), axis=1)
         df = df.dropna(subset=['labels']).reset_index(drop=True)
 
         df.to_csv(f'{classification_phase}_out.csv')
         body_dataset = Dataset.from_pandas(df)
         print(f'{classification_phase}: {body_dataset}')
-        continue
         dataset = body_dataset.train_test_split(test_size=0.2)
         LOGGER.debug(f'this is how the dataset is broken down: {dataset}')
         repo_name = f"wwf-seaweed-body-subject-{classification_phase}"
