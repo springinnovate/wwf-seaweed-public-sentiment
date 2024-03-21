@@ -187,17 +187,14 @@ def main():
     }
 
     for classification_phase, subject_to_label, reject_set in [
-            ('relevant-irrelevant', RELEVANT_SUBJECT_TO_LABEL, set()),
+            #('relevant-irrelevant', RELEVANT_SUBJECT_TO_LABEL, set()),
             ('aquaculture-type', AQUACULTURE_SUBJECT_TO_LABEL, irrelevant_set),
             ]:
         df = pandas.DataFrame(subjects_bodies, columns=[LABEL_KEY, DATA_KEY])
-        print(f'before: {df}')
         df['labels'] = df.apply(
             map_labels(subject_to_label, LABEL_KEY, reject_set), axis=1)
-        print(df)
         df = df.dropna(subset=['labels']).reset_index(drop=True)
-        print(df)
-        continue
+        df['labels'] = df['labels'].astype(int)
 
         df.to_csv(f'{classification_phase}_out.csv')
         body_dataset = Dataset.from_pandas(df)
