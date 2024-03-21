@@ -191,7 +191,7 @@ def main():
 
         df.to_csv(f'{classification_phase}_out.csv')
         body_dataset = Dataset.from_pandas(df)
-        print(body_dataset)
+        print(f'{classification_phase}: {body_dataset}')
         continue
         dataset = body_dataset.train_test_split(test_size=0.2)
         LOGGER.debug(f'this is how the dataset is broken down: {dataset}')
