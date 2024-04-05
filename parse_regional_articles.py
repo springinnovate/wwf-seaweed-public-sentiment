@@ -30,51 +30,40 @@ def main():
             'data/successfulresults_seaweed_regional_search/*.json'):
         article_list = []
         with open(json_file, encoding='utf-8', errors='ignore') as file:
-            in_article = False
             for line in file:
                 line = line.strip()
-                if not in_article:
-                    if line.startswith('"url"'):
-                        match = re.search(URL_RE, line)
-                        url_text = match.group(1) if match else None
-                        raw_date = url_text.split('/web/')[1][:8]
-                        formatted_date = (
-                            f"{raw_date[:4]}/{raw_date[4:6]}/{raw_date[6:]}")
-                    if line.startswith('"title"'):
-                        in_article = True
-                        article_count += 1
-                        match = re.search(TITLE_RE, line)
-                        headline_text = match.group(1) if match else None
-                else:
-                    # TODO: parse out prhase like how sam wanted it with regular expression
-                    # TODO: parse out the year/month/day from the url
-                    # TODO: bring in the seniment AI framework for titles
-                    # TODO: bring in the subject AI for the articles
-                    # TODO: implement the location extraction AI
-                    if line.startswith('"paragraph"'):
-                        instance_count = 0
-                        if re.search(SEAWEED_RE, line):
-                            seaweed_count += 1
-                            instance_count += 1
-                        if re.search(AQUACULTURE_RE, line):
-                            aquaculture_count += 1
-                            instance_count += 1
-                        in_article = False
-                    if instance_count == 2:
-                        both_count += 1
-                    if not in_article:
-                        body_text = ' '.join(eval(line.split('"paragraph": ')[1]))
-                        new_article = Article(
-                            headline=headline_text,
-                            body=body_text,
-                            date=formatted_date,
-                            publication=body_text,
-                            source_file=json_file,
-                            ground_truth_body_subject=None,
-                            ground_truth_body_location=None,
-                            )
-                        article_list.append(new_article)
-            print('inserting {json_file}')
+                if line.startswith('"url"'):
+                    match = re.search(URL_RE, line)
+                    url_text = match.group(1) if match else None
+                    raw_date = url_text.split('/web/')[1][:8]
+                    formatted_date = (
+                        f"{raw_date[:4]}/{raw_date[4:6]}/{raw_date[6:]}")
+                if line.startswith('"title"'):
+                    match = re.search(TITLE_RE, line)
+                    headline_text = match.group(1) if match else None
+                if line.startswith('"paragraph"'):
+                    instance_count = 0
+                    if re.search(SEAWEED_RE, line):
+                        seaweed_count += 1
+                        instance_count += 1
+                    if re.search(AQUACULTURE_RE, line):
+                        aquaculture_count += 1
+                        instance_count += 1
+                if instance_count == 2:
+                    article_count += 1
+                    both_count += 1
+                    body_text = ' '.join(eval(line.split('"paragraph": ')[1]))
+                    new_article = Article(
+                        headline=headline_text,
+                        body=body_text,
+                        date=formatted_date,
+                        publication=body_text,
+                        source_file=json_file,
+                        ground_truth_body_subject=None,
+                        ground_truth_body_location=None,
+                        )
+                    article_list.append(new_article)
+            print(f'inserting {json_file}')
             upsert_articles(db, article_list)
             print(
                 f'articles: {article_count}\n'
