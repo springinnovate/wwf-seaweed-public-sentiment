@@ -42,16 +42,17 @@ def main():
                     match = re.search(TITLE_RE, line)
                     headline_text = match.group(1) if match else None
                 if line.startswith('"paragraph"'):
-                    instance_count = 0
+                    match_count = 0
                     if re.search(SEAWEED_RE, line):
                         seaweed_count += 1
-                        instance_count += 1
+                        match_count += 1
                     if re.search(AQUACULTURE_RE, line):
                         aquaculture_count += 1
-                        instance_count += 1
-                if instance_count == 2:
-                    article_count += 1
+                        match_count += 1
+                if match_count == 2:
                     both_count += 1
+                if match_count > 0:
+                    article_count += 1
                     body_text = ' '.join(eval(line.split('"paragraph": ')[1]))
                     new_article = Article(
                         headline=headline_text,
