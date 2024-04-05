@@ -33,7 +33,6 @@ def main():
             for line in file:
                 line = line.strip()
                 if line.startswith('"url"'):
-                    article_count += 1
                     match = re.search(URL_RE, line)
                     url_text = match.group(1) if match else None
                     raw_date = url_text.split('/web/')[1][:8]
@@ -43,6 +42,7 @@ def main():
                     match = re.search(TITLE_RE, line)
                     headline_text = match.group(1) if match else None
                 if line.startswith('"paragraph"'):
+                    article_count += 1
                     match_count = 0
                     if re.search(SEAWEED_RE, line):
                         seaweed_count += 1
@@ -64,6 +64,9 @@ def main():
                             ground_truth_body_location=None,
                             )
                         article_list.append(new_article)
+                        body_text = None
+                        headline_text = None
+                        formatted_date = None
             print(f'inserting {json_file}')
             upsert_articles(db, article_list)
             print(
