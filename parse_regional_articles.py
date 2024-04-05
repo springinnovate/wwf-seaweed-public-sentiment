@@ -1,4 +1,5 @@
 import glob
+import time
 
 AQUACULTURE_KEYWORDS = {
     "aquaculture",
@@ -43,4 +44,47 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    X = 0.5
+    while True:
+        print(' 0')
+        print('-|-')
+        print(' x')
+        print('/ \\')
+        time.sleep(X)
+
+        print(' 0')
+        print('-|/')
+        print(' x')
+        print('/ \\')
+        time.sleep(X)
+
+        print(' 0')
+        print('/|/')
+        print(' x')
+        print('/ \\')
+        time.sleep(X)
+
+        print(' 0')
+        print('/|/')
+        print(' x')
+        print(' \\\\')
+        time.sleep(X)
+
+        print(' 0')
+        print('L|')
+        print(' X7')
+        print('\\/')
+        time.sleep(X)
+
+        print(' 0')
+        print('=|')
+        print(' X')
+        print(' \\\\')
+        time.sleep(X)
+
+        print(' 0')
+        print(' |=')
+        print(' X')
+        print('//')
+        time.sleep(X)
+    print('!!!!MAN DANCE!!!!')
