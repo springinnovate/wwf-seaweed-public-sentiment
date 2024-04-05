@@ -2,12 +2,13 @@
 from transformers import pipeline
 
 from database_model_definitions import Article, AIResultBody, USER_CLASSIFIED_BODY_OPTIONS, RELEVANT_SUBJECT_TO_LABEL, AQUACULTURE_SUBJECT_TO_LABEL, SEAWEED_LABEL, OTHER_AQUACULTURE_LABEL
+from database_model_definitions import RELEVANT_LABEL, IRRELEVANT_LABEL
 from database import SessionLocal, init_db
 
 
 RELEVANT_LABEL_TO_SUBJECT = {
-    f'LABEL_{RELEVANT_SUBJECT_TO_LABEL}': 'RELEVANT',
-    f'LABEL_{AQUACULTURE_SUBJECT_TO_LABEL}': 'IRRELEVANT'
+    f'LABEL_{RELEVANT_LABEL}': 'RELEVANT',
+    f'LABEL_{IRRELEVANT_LABEL}': 'IRRELEVANT'
 }
 
 AQUACULTURE_LABEL_TO_SUBJECT = {
@@ -15,8 +16,8 @@ AQUACULTURE_LABEL_TO_SUBJECT = {
     f'LABEL_{OTHER_AQUACULTURE_LABEL}': 'OTHER AQUACULTURE'
 }
 
-RELEVANT_SUBJECT_MODEL_PATH = None
-AQUACULTURE_SUBJECT_MODEL_PATH = None
+RELEVANT_SUBJECT_MODEL_PATH = "wwf-seaweed-body-subject-relevant-irrelevant/allenai-longformer-base-4096_19"
+AQUACULTURE_SUBJECT_MODEL_PATH = "wwf-seaweed-body-subject-aquaculture-type/allenai-longformer-base-4096_17"
 
 
 def main():
@@ -56,9 +57,9 @@ def main():
         } for val in aquaculture_subject_model(relevant_bodies)]
 
     print('updating database')
-    for body, headline_sentiment_result in zip(
+    for body, relevant_subject_result in zip(
             bodies_without_ai, relevant_subject_result_list):
-        if headline_sentiment_result['label'] == 'RELEVANT':
+        if relevant_subject_result['label'] == 'RELEVANT':
             continue
         print(body)
         same_body_articles = session.query(Article).filter(
@@ -66,18 +67,18 @@ def main():
         for article in same_body_articles:
             article.body_subject_ai = [
                 AIResultBody(
-                    value=headline_sentiment_result['label'],
-                    score=headline_sentiment_result['score'])]
-    for body, headline_sentiment_result in zip(
-            aquaculture_type_result_list, relevant_bodies):
+                    value=relevant_subject_result['label'],
+                    score=relevant_subject_result['score'])]
+    for body, aquaculture_type_result in zip(
+            relevant_bodies, aquaculture_type_result_list):
         print(body)
         same_body_articles = session.query(Article).filter(
             Article.body == body).all()
         for article in same_body_articles:
             article.body_subject_ai = [
                 AIResultBody(
-                    value=headline_sentiment_result['label'],
-                    score=headline_sentiment_result['score'])]
+                    value=aquaculture_type_result['label'],
+                    score=aquaculture_type_result['score'])]
 
     session.commit()
     session.close()
