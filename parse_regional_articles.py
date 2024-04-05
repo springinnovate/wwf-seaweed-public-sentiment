@@ -75,6 +75,7 @@ def main():
                             )
                         print(new_article)
                         article_list.append(new_article)
+            print('inserting {json_file}')
             upsert_articles(db, article_list)
             print(
                 f'articles: {article_count}\n'
