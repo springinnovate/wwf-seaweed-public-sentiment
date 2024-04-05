@@ -33,6 +33,7 @@ def main():
             for line in file:
                 line = line.strip()
                 if line.startswith('"url"'):
+                    article_count += 1
                     match = re.search(URL_RE, line)
                     url_text = match.group(1) if match else None
                     raw_date = url_text.split('/web/')[1][:8]
@@ -49,21 +50,20 @@ def main():
                     if re.search(AQUACULTURE_RE, line):
                         aquaculture_count += 1
                         match_count += 1
-                if match_count == 2:
-                    both_count += 1
-                if match_count > 0:
-                    article_count += 1
-                    body_text = ' '.join(eval(line.split('"paragraph": ')[1]))
-                    new_article = Article(
-                        headline=headline_text,
-                        body=body_text,
-                        date=formatted_date,
-                        publication=body_text,
-                        source_file=json_file,
-                        ground_truth_body_subject=None,
-                        ground_truth_body_location=None,
-                        )
-                    article_list.append(new_article)
+                    if match_count == 2:
+                        both_count += 1
+                    if match_count > 0:
+                        body_text = ' '.join(eval(line.split('"paragraph": ')[1]))
+                        new_article = Article(
+                            headline=headline_text,
+                            body=body_text,
+                            date=formatted_date,
+                            publication=body_text,
+                            source_file=json_file,
+                            ground_truth_body_subject=None,
+                            ground_truth_body_location=None,
+                            )
+                        article_list.append(new_article)
             print(f'inserting {json_file}')
             upsert_articles(db, article_list)
             print(
