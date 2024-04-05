@@ -1,31 +1,50 @@
 import glob
+import re
 import time
 
-AQUACULTURE_KEYWORDS = {
-    "aquaculture",
-    "marine aquaculture",
-    "offshore aquaculture"
-    }
+from database_model_definitions import Article
+from database_operations import upsert_articles
+from database import SessionLocal, init_db
 
-SEAWEED_AQUACULTURE = {
-    'seaweed',
-    'kelp',
-    'sea moss',
-    'aquaculture',
-    'farm',
-    'cultivat',
-}
+
+AQUACULTURE_RE = "(?i)aquaculture|(?i)g aquaculture|(?i)offshore aquaculture"
+SEAWEED_RE = "((?i)seaweed|(?i)kelp|(?i)sea moss) .* ((?i)aquaculture|(?i)farm*|(?i)cultivat*)"
+
+
+AQUACULTURE_RE = re.compile(
+    'aquaculture|offshore aquaculture', re.IGNORECASE)
+SEAWEED_RE = re.compile(
+    '(seaweed|kelp|sea moss) .* (aquaculture|farm*|cultivat*)', re.IGNORECASE)
+
+TITLE_RE = r'"title": \["(.*?)"\]'
+URL_RE = r'"url": \["(.*?)"\]'
 
 def main():
+    article_count = 0
+    seaweed_count = 0
+    aquaculture_count = 0
+    both_count = 0
+    init_db()
+    db = SessionLocal()
     for json_file in glob.glob(
             'data/successfulresults_seaweed_regional_search/*.json'):
-        with open(json_file, encoding='utf-8') as file:
+        article_list = []
+        with open(json_file, encoding='utf-8', errors='ignore') as file:
             in_article = False
             for line in file:
                 line = line.strip()
                 if not in_article:
+                    if line.startswith('"url"'):
+                        match = re.search(URL_RE, line)
+                        url_text = match.group(1) if match else None
+                        raw_date = url_text.split('/web/')[1][:8]
+                        formatted_date = (
+                            f"{raw_date[:4]}/{raw_date[4:6]}/{raw_date[6:]}")
                     if line.startswith('"title"'):
                         in_article = True
+                        article_count += 1
+                        match = re.search(TITLE_RE, line)
+                        headline_text = match.group(1) if match else None
                 else:
                     # TODO: parse out prhase like how sam wanted it with regular expression
                     # TODO: parse out the year/month/day from the url
@@ -33,71 +52,36 @@ def main():
                     # TODO: bring in the subject AI for the articles
                     # TODO: implement the location extraction AI
                     if line.startswith('"paragraph"'):
-                        if any(
-                                keyword in line
-                                for keyword in AQUACULTURE_KEYWORDS):
-                            print(f'AQUACUTLURE: {line}')
-                        # if any(
-                        #         keyword in line
-                        #         for keyword in SEAWEED_AQUACULTURE):
-                        #     print(f'SEAWEED AQUACUTLURE: {line}')
+                        instance_count = 0
+                        if re.search(SEAWEED_RE, line):
+                            seaweed_count += 1
+                            instance_count += 1
+                        if re.search(AQUACULTURE_RE, line):
+                            aquaculture_count += 1
+                            instance_count += 1
+                        in_article = False
+                    if instance_count == 2:
+                        both_count += 1
+                    if not in_article:
+                        body_text = ' '.join(eval(line.split('"paragraph": ')[1]))
+                        new_article = Article(
+                            headline=headline_text,
+                            body=body_text,
+                            date=formatted_date,
+                            publication=body_text,
+                            source_file=json_file,
+                            ground_truth_body_subject=None,
+                            ground_truth_body_location=None,
+                            )
+                        print(new_article)
+                        article_list.append(new_article)
+            upsert_articles(db, article_list)
+            print(
+                f'articles: {article_count}\n'
+                f'seaweed: {seaweed_count}\n'
+                f'aquaculture: {aquaculture_count}\n'
+                f'both: {both_count}\n')
 
 
 if __name__ == '__main__':
-    X = 0.5
-    while True:
-        print(' m')
-        print(')0(')
-        print('-|-')
-        print(' x')
-        print('/ \\')
-        time.sleep(X)
-        print('!*!!MAN DANCE!!!!')
-
-        print('  m')
-        print(' )0(')
-        print(' -|/')
-        print('  x')
-        print(' / \\')
-        time.sleep(X)
-        print('!!*!MAN DANCE!!!!')
-
-        print('   m')
-        print('  )0(')
-        print('  /|/')
-        print('   x')
-        print('  / \\')
-        time.sleep(X)
-        print('!!!*MAN DANCE!!!!')
-
-        print('    m')
-        print('   )0(')
-        print('   /|/')
-        print('    x')
-        print('    \\\\')
-        time.sleep(X)
-        print('!!!!MAN DANCE*!!!')
-
-        print('    m')
-        print('   )0(')
-        print('   L|')
-        print('    X7')
-        print('   \\/')
-        time.sleep(X)
-        print('!!!!MAN DANCE!*!!')
-
-        print('   m')
-        print('  )0(')
-        print('  =|')
-        print('   X')
-        print('   \\\\')
-        time.sleep(X)
-        print('!!!!MAN DANCE!!*!')
-
-        print('  m')
-        print(' )0(')
-        print('  |=')
-        print('  X')
-        print(' //')
-        time.sleep(X)
-        print('!!!!MAN DANCE!!!*')
+    main()
