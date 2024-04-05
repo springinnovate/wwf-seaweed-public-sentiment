@@ -73,7 +73,6 @@ def main():
                             ground_truth_body_subject=None,
                             ground_truth_body_location=None,
                             )
-                        print(new_article)
                         article_list.append(new_article)
             print('inserting {json_file}')
             upsert_articles(db, article_list)
@@ -82,6 +81,9 @@ def main():
                 f'seaweed: {seaweed_count}\n'
                 f'aquaculture: {aquaculture_count}\n'
                 f'both: {both_count}\n')
+    db.commit()
+    db.close()
+    print('all done')
 
 
 if __name__ == '__main__':
