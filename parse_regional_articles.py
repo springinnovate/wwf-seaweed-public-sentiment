@@ -26,6 +26,11 @@ def main():
                     if line.startswith('"title"'):
                         in_article = True
                 else:
+                    # TODO: parse out prhase like how sam wanted it with regular expression
+                    # TODO: parse out the year/month/day from the url
+                    # TODO: bring in the seniment AI framework for titles
+                    # TODO: bring in the subject AI for the articles
+                    # TODO: implement the location extraction AI
                     if line.startswith('"paragraph"'):
                         if any(
                                 keyword in line
