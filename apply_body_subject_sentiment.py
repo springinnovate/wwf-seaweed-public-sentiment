@@ -1,6 +1,7 @@
 """Tracer code to figure out how to parse out DocX files."""
 from transformers import pipeline
 from functools import wraps
+import re
 
 from database_model_definitions import Article, AIResultBody, USER_CLASSIFIED_BODY_OPTIONS, RELEVANT_SUBJECT_TO_LABEL, AQUACULTURE_SUBJECT_TO_LABEL, SEAWEED_LABEL, OTHER_AQUACULTURE_LABEL
 from database_model_definitions import RELEVANT_LABEL, IRRELEVANT_LABEL
@@ -34,14 +35,28 @@ def memoize(func):
     return memoized_func
 
 
+def standardize_text(text):
+    text = re.sub(r'[!?,;:]', '.', text)
+    text = text.replace('\n', ' ').replace('\r', '')
+    text = text.lower()
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
+
 def make_pipeline(model_type, model_path):
     _pipeline = pipeline(
         model_type, model=model_path,
         device='cuda', truncation=True)
+
     @memoize
     def _sentiment_op(text_val):
         return _pipeline(text_val)
-    return _sentiment_op
+
+    def _standardize_and_sentiment(raw_text):
+        clean_text = standardize_text
+        return _sentiment_op(clean_text)
+
+    return _standardize_and_sentiment
 
 
 def main():
