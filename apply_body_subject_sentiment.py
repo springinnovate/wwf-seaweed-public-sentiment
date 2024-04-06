@@ -69,7 +69,6 @@ def main():
             AIResultBody.id_key == None,
             Article.body != None,
             Article.body != '')
-        .limit(5)
         .all())
     bodies_without_ai = [article.body for article in articles_without_ai]
     print(f'doing sentiment-analysis on {len(bodies_without_ai)} headlines')
