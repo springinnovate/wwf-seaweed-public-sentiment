@@ -23,20 +23,9 @@ RELEVANT_SUBJECT_MODEL_PATH = "wwf-seaweed-body-subject-relevant-irrelevant/alle
 AQUACULTURE_SUBJECT_MODEL_PATH = "wwf-seaweed-body-subject-aquaculture-type/allenai-longformer-base-4096_36"
 
 
-def memoize(func):
-    cache = {}
-    @wraps(func)
-    def memoized_func(*args):
-        if args in cache:
-            return cache[args]
-        result = func(*args)
-        cache[args] = result
-        return result
-    return memoized_func
-
-
 def standardize_text(text):
-    text = re.sub(r'[!?,;:]', '.', text)
+    text = re.sub(r'[!?]', '.', text)
+    text = re.sub(r'[\'",;:-]', '', text)
     text = text.replace('\n', ' ').replace('\r', '')
     text = text.lower()
     text = re.sub(r'\s+', ' ', text).strip()
@@ -48,13 +37,19 @@ def make_pipeline(model_type, model_path):
         model_type, model=model_path,
         device='cuda', truncation=True)
 
-    @memoize
-    def _sentiment_op(text_val):
-        return _pipeline(text_val)
-
-    def _standardize_and_sentiment(raw_text):
-        clean_text = standardize_text
-        return _sentiment_op(clean_text)
+    def _standardize_and_sentiment(raw_text_list):
+        clean_text = [
+            standardize_text(raw_text)
+            for raw_text in raw_text_list]
+        unique_text = list(set(clean_text))
+        text_to_index_lookup = {
+            text_val: index for index, text_val in enumerate(unique_text)
+        }
+        unique_results = _pipeline(unique_text)
+        full_results = [
+            unique_results[text_to_index_lookup[base_text_val]]
+            for base_text_val in clean_text]
+        return full_results
 
     return _standardize_and_sentiment
 
