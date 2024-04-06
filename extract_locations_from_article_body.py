@@ -26,6 +26,8 @@ def main():
         with torch.no_grad():
             outputs = model(**inputs).logits
         predictions = torch.argmax(outputs, dim=2)
+        print(predictions)
+        print(tokens)
 
         # Extract locations
         locations = []
@@ -33,10 +35,10 @@ def main():
             if model.config.id2label[prediction] in ['B-LOC', 'I-LOC']:  # B-LOC and I-LOC are typically used for locations
                 locations.append(token)
 
-        return " ".join(locations)
+        return locations
 
     # Example usage
-    article_text = "The quick brown fox jumps over the lazy dog in New York."
+    article_text = 'The quick brown fox jumps over the lazy dog in New York. Robert Alabama is from Salt Lake City Utah'
     extracted_locations = extract_locations(article_text)
     print(extracted_locations)
 

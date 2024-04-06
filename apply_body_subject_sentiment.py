@@ -3,21 +3,22 @@ from transformers import pipeline
 
 from database_model_definitions import Article, AIResultBody, USER_CLASSIFIED_BODY_OPTIONS, RELEVANT_SUBJECT_TO_LABEL, AQUACULTURE_SUBJECT_TO_LABEL, SEAWEED_LABEL, OTHER_AQUACULTURE_LABEL
 from database_model_definitions import RELEVANT_LABEL, IRRELEVANT_LABEL
+from database_model_definitions import RELEVANT_TAG, IRRELEVANT_TAG, SEAWEED_TAG, OTHER_AQUACULTURE_TAG
 from database import SessionLocal, init_db
 
 
 RELEVANT_LABEL_TO_SUBJECT = {
-    f'LABEL_{RELEVANT_LABEL}': 'RELEVANT',
-    f'LABEL_{IRRELEVANT_LABEL}': 'IRRELEVANT'
+    f'LABEL_{RELEVANT_LABEL}': RELEVANT_TAG,
+    f'LABEL_{IRRELEVANT_LABEL}': IRRELEVANT_TAG
 }
 
 AQUACULTURE_LABEL_TO_SUBJECT = {
-    f'LABEL_{SEAWEED_LABEL}': 'SEAWEED AQUACULTURE',
-    f'LABEL_{OTHER_AQUACULTURE_LABEL}': 'OTHER AQUACULTURE'
+    f'LABEL_{SEAWEED_LABEL}': SEAWEED_TAG,
+    f'LABEL_{OTHER_AQUACULTURE_LABEL}': OTHER_AQUACULTURE_TAG,
 }
 
 RELEVANT_SUBJECT_MODEL_PATH = "wwf-seaweed-body-subject-relevant-irrelevant/allenai-longformer-base-4096_19"
-AQUACULTURE_SUBJECT_MODEL_PATH = "wwf-seaweed-body-subject-aquaculture-type/allenai-longformer-base-4096_17"
+AQUACULTURE_SUBJECT_MODEL_PATH = "wwf-seaweed-body-subject-aquaculture-type/allenai-longformer-base-4096_36"
 
 
 def main():
@@ -48,7 +49,7 @@ def main():
     relevant_bodies = [
         body for body, classification in
         zip(bodies_without_ai, relevant_subject_result_list)
-        if classification['label'] == 'RELEVANT']
+        if classification['label'] == RELEVANT_TAG]
 
     aquaculture_type_result_list = [
         {
@@ -59,7 +60,7 @@ def main():
     print('updating database')
     for body, relevant_subject_result in zip(
             bodies_without_ai, relevant_subject_result_list):
-        if relevant_subject_result['label'] == 'RELEVANT':
+        if relevant_subject_result['label'] == RELEVANT_TAG:
             continue
         print(body)
         same_body_articles = session.query(Article).filter(

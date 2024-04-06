@@ -24,6 +24,7 @@ def main():
         session.query(Article).outerjoin(AIResultHeadline, Article.id_key == AIResultHeadline.article_id)
         .filter(AIResultHeadline.id_key == None)
         .all()]
+
     print(f'doing sentiment-analysis on {len(headlines_without_ai)} headlines')
     headline_sentiment_result = headline_sentiment_model(headlines_without_ai)
 
