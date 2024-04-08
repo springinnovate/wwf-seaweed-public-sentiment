@@ -53,7 +53,7 @@ Albania
 Algeria
 Andorra
 Angola
-Antigua
+Antigua and Barbuda
 Argentina
 Armenia
 Australia
@@ -69,42 +69,42 @@ Belize
 Benin
 Bhutan
 Bolivia
-Bosnia
+Bosnia and Herzegovina
 Botswana
 Brazil
 Brunei
 Bulgaria
-Burkina
+Burkina Faso
 Burundi
-Côte
-Cabo
+Côte d'Ivoire
+Cabo Verde
 Cambodia
 Cameroon
 Canada
-Central
+Central African Republic
 Chad
 Chile
 China
 Colombia
 Comoros
-Congo
-Costa
+Congo (Congo-Brazzaville)
+Costa Rica
 Croatia
 Cuba
 Cyprus
-Czechia
-Democratic
+Czechia (Czech Republic)
+Democratic Republic of the Congo
 Denmark
 Djibouti
 Dominica
-Dominican
+Dominican Republic
 Ecuador
 Egypt
-El
-Equatorial
+El Salvador
+Equatorial Guinea
 Eritrea
 Estonia
-Eswatini
+Eswatini (fmr. "Swaziland")
 Ethiopia
 Fiji
 Finland
@@ -121,7 +121,7 @@ Guinea
 Guinea-Bissau
 Guyana
 Haiti
-Holy
+Holy See
 Honduras
 Hungary
 Iceland
@@ -155,7 +155,7 @@ Malaysia
 Maldives
 Mali
 Malta
-Marshall
+Marshall Islands
 Mauritania
 Mauritius
 Mexico
@@ -166,24 +166,24 @@ Mongolia
 Montenegro
 Morocco
 Mozambique
-Myanmar
+Myanmar (formerly Burma)
 Namibia
 Nauru
 Nepal
 Netherlands
-New
+New Zealand
 Nicaragua
 Niger
 Nigeria
-North
-North
+North Korea
+North Macedonia
 Norway
 Oman
 Pakistan
 Palau
-Palestine
+Palestine State
 Panama
-Papua
+Papua New Guinea
 Paraguay
 Peru
 Philippines
@@ -193,27 +193,27 @@ Qatar
 Romania
 Russia
 Rwanda
-Saint
-Saint
-Saint
+Saint Kitts and Nevis
+Saint Lucia
+Saint Vincent and the Grenadines
 Samoa
-San
-Sao
-Saudi
+San Marino
+Sao Tome and Principe
+Saudi Arabia
 Senegal
 Serbia
 Seychelles
-Sierra
+Sierra Leone
 Singapore
 Slovakia
 Slovenia
-Solomon
+Solomon Islands
 Somalia
-South
-South
-South
+South Africa
+South Korea
+South Sudan
 Spain
-Sri
+Sri Lanka
 Sudan
 Suriname
 Sweden
@@ -225,16 +225,16 @@ Thailand
 Timor-Leste
 Togo
 Tonga
-Trinidad
+Trinidad and Tobago
 Tunisia
 Turkey
 Turkmenistan
 Tuvalu
 Uganda
 Ukraine
-United
-United
-United
+United Arab Emirates
+United Kingdom
+United States of America
 Uruguay
 Uzbekistan
 Vanuatu
