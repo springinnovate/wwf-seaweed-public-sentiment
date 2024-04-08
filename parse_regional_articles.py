@@ -5,19 +5,12 @@ import time
 from database_model_definitions import Article
 from database_operations import upsert_articles
 from database import SessionLocal, init_db
+from database_model_definitions import AQUACULTURE_RE, SEAWEED_RE
 
-
-AQUACULTURE_RE = "(?i)aquaculture|(?i)g aquaculture|(?i)offshore aquaculture"
-SEAWEED_RE = "((?i)seaweed|(?i)kelp|(?i)sea moss) .* ((?i)aquaculture|(?i)farm*|(?i)cultivat*)"
-
-
-AQUACULTURE_RE = re.compile(
-    'aquaculture|offshore aquaculture', re.IGNORECASE)
-SEAWEED_RE = re.compile(
-    '(seaweed|kelp|sea moss) .* (aquaculture|farm*|cultivat*)', re.IGNORECASE)
 
 TITLE_RE = r'"title": \["(.*?)"\]'
 URL_RE = r'"url": \["(.*?)"\]'
+
 
 def main():
     article_count = 0

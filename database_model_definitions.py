@@ -1,4 +1,6 @@
 """Database definitions for news articles and their classifications."""
+import re
+
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
@@ -44,6 +46,11 @@ TOP_LEVEL_BODY_CLASSIFICATIONS = [
     SEAWEED_TAG,
     OTHER_AQUACULTURE_TAG,
 ]
+
+AQUACULTURE_RE = re.compile(
+    'aquaculture|offshore aquaculture', re.IGNORECASE)
+SEAWEED_RE = re.compile(
+    '(seaweed|kelp|sea moss) .* (aquaculture|farm*|cultivat*)', re.IGNORECASE)
 
 
 class Base(DeclarativeBase):

@@ -5,7 +5,7 @@ import re
 
 from database_model_definitions import Article, AIResultBody, USER_CLASSIFIED_BODY_OPTIONS, RELEVANT_SUBJECT_TO_LABEL, AQUACULTURE_SUBJECT_TO_LABEL, SEAWEED_LABEL, OTHER_AQUACULTURE_LABEL
 from database_model_definitions import RELEVANT_LABEL, IRRELEVANT_LABEL
-from database_model_definitions import RELEVANT_TAG, IRRELEVANT_TAG, SEAWEED_TAG, OTHER_AQUACULTURE_TAG
+from database_model_definitions import RELEVANT_TAG, IRRELEVANT_TAG, SEAWEED_TAG, OTHER_AQUACULTURE_TAG, SEAWEED_RE
 from database import SessionLocal, init_db
 
 
@@ -55,6 +55,7 @@ def make_pipeline(model_type, model_path):
 
 
 def main():
+    seaweed_re = re.compile('(seaweed|kelp|sea moss)', re.IGNORECASE)
     relevant_subject_model = make_pipeline(
         'text-classification', RELEVANT_SUBJECT_MODEL_PATH)
     aquaculture_subject_model = make_pipeline(
@@ -71,7 +72,7 @@ def main():
             Article.body != '')
         .all())
     bodies_without_ai = [article.body for article in articles_without_ai]
-    print(f'doing sentiment-analysis on {len(bodies_without_ai)} headlines')
+    print(f'doing sentiment-analysis on {len(bodies_without_ai)} article bodies')
     relevant_subject_result_list = [
         {
             'label': RELEVANT_LABEL_TO_SUBJECT[val['label']],
@@ -100,9 +101,14 @@ def main():
                 score=relevant_subject_result['score'])]
     for article, aquaculture_type_result in zip(
             relevant_articles, aquaculture_type_result_list):
+        working_label = aquaculture_type_result['label']
+        if working_label == OTHER_AQUACULTURE_TAG and re.search(
+                seaweed_re, article.body):
+            # override if there's a regular expression match
+            working_label = SEAWEED_TAG
         article.body_subject_ai = [
             AIResultBody(
-                value=aquaculture_type_result['label'],
+                value=working_label,
                 score=aquaculture_type_result['score'])]
 
     session.commit()
