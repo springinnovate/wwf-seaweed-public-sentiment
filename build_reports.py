@@ -7,6 +7,7 @@ import string
 import pandas
 from database_model_definitions import Article, AIResultHeadline, AIResultBody, AIResultLocation, USER_CLASSIFIED_BODY_OPTIONS
 from database_operations import filter_classified_body_by_order
+from database_operations import filter_user_defined_body_to_top_level_tags
 from database import SessionLocal, init_db
 import matplotlib.pyplot as plt
 from sqlalchemy import distinct
@@ -76,26 +77,28 @@ def main():
         Article.user_classified_body_subject.isnot(None)).all()
     subject_confusion_matrix = collections.defaultdict(
         lambda: collections.defaultdict(int))
+
     for ground_truth_subject_str, classified_subject in results:
-        primary_ground_truth = filter_classified_body_by_order(
+        primary_ground_truth = filter_user_defined_body_to_top_level_tags(
             ground_truth_subject_str)
+        print(f'{ground_truth_subject_str} to {primary_ground_truth}')
         subject_confusion_matrix[primary_ground_truth][classified_subject] += 1
     print(subject_confusion_matrix)
 
     subject_confusing_matrix_path = 'subject_confusion_matrix.csv'
     with open(subject_confusing_matrix_path, 'w') as confusion_matrix_table:
         confusion_matrix_table.write(
-            'modeled vs ground truth,' + ','.join(USER_CLASSIFIED_BODY_OPTIONS) + '\n')
-        for classified_subject in USER_CLASSIFIED_BODY_OPTIONS:
+            'modeled vs ground truth,' + ','.join(TOP_LEVEL_BODY_CLASSIFICATIONS) + '\n')
+        for classified_subject in TOP_LEVEL_BODY_CLASSIFICATIONS:
             confusion_matrix_table.write(f'{classified_subject},')
-            for index, ground_truth in enumerate(USER_CLASSIFIED_BODY_OPTIONS):
+            for index, ground_truth in enumerate(TOP_LEVEL_BODY_CLASSIFICATIONS):
                 total = sum([
                     subject_confusion_matrix[ground_truth][local_modeled]
-                    for local_modeled in USER_CLASSIFIED_BODY_OPTIONS])
+                    for local_modeled in TOP_LEVEL_BODY_CLASSIFICATIONS])
                 count = subject_confusion_matrix[ground_truth][classified_subject]
                 confusion_matrix_table.write(
                     f'{count} ({count/total*100:.1f}%)')
-                if index < len(USER_CLASSIFIED_BODY_OPTIONS)-1:
+                if index < len(TOP_LEVEL_BODY_CLASSIFICATIONS)-1:
                     confusion_matrix_table.write(',')
             confusion_matrix_table.write('\n')
 

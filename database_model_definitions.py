@@ -1,4 +1,6 @@
 """Database definitions for news articles and their classifications."""
+import re
+
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
@@ -8,16 +10,20 @@ from typing import List
 from typing import Optional
 
 # sorted in order of priority
-USER_CLASSIFIED_BODY_OPTIONS = [
+IRRELEVANT_TAG_LIST = [
     'NOT ENGLISH',
     'NOT NEWS',
     'NOT AQUACULTURE',
+]
+USER_CLASSIFIED_BODY_OPTIONS = IRRELEVANT_TAG_LIST + [
     'SEAWEED AQUACULTURE',
     'OTHER AQUACULTURE',
 ]
 
 RELEVANT_LABEL = 0
+RELEVANT_TAG = 'RELEVANT'
 IRRELEVANT_LABEL = 1
+IRRELEVANT_TAG = 'IRRELEVANT'
 RELEVANT_SUBJECT_TO_LABEL = {
     'SEAWEED AQUACULTURE': RELEVANT_LABEL,
     'OTHER AQUACULTURE': RELEVANT_LABEL,
@@ -27,11 +33,24 @@ RELEVANT_SUBJECT_TO_LABEL = {
 }
 
 SEAWEED_LABEL = 0
+SEAWEED_TAG = 'SEAWEED AQUACULTURE'
 OTHER_AQUACULTURE_LABEL = 1
+OTHER_AQUACULTURE_TAG = 'OTHER AQUACULTURE'
 AQUACULTURE_SUBJECT_TO_LABEL = {
     'SEAWEED AQUACULTURE': SEAWEED_LABEL,
     'OTHER AQUACULTURE': OTHER_AQUACULTURE_LABEL,
 }
+
+TOP_LEVEL_BODY_CLASSIFICATIONS = [
+    IRRELEVANT_TAG,
+    SEAWEED_TAG,
+    OTHER_AQUACULTURE_TAG,
+]
+
+AQUACULTURE_RE = re.compile(
+    'aquaculture|offshore aquaculture', re.IGNORECASE)
+SEAWEED_RE = re.compile(
+    '(seaweed|kelp|sea moss) .* (aquaculture|farm*|cultivat*)', re.IGNORECASE)
 
 
 class Base(DeclarativeBase):
