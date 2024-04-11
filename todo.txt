@@ -5,9 +5,9 @@ x de-duplicate headlines
 x apply headline sentiment to all headlines
 x Ingest the froueleich headlines w/ sentiment
 x parse out year
-* report headline sentiment
-    * summary in presentation
-    * raw results to whomever wants them
+x report headline sentiment
+    x summary in presentation
+    x raw results to whomever wants them
 
 
 x parse through Dan's word doc papers for the up-to-date info, that's on bigboi under "data" now
@@ -55,3 +55,35 @@ x Database design
 * Pipeline
     * ingest articles from .docx or .pdf and dump to database?
         * check for duplication here, articles with same headline w/in 7 days of each other?
+
+
+* stats
+    * number of scraped articles from internet archive
+        * number of regular expression matched articles
+            * unique ones
+                * seaweed
+                * other aquaculture
+    * Number of sources from dan
+        * unique ones
+            * seaweed
+            * other aquaculture
+    * Froelich count
+
+Filter by tag
+    * Froelich
+    * The two sources dan got
+    * Internet Archive
+
+Output for relevant articles:
+* Headline
+* Publication
+* Date (year?)
+* Headline Sentiment
+* Body subject
+* Body geographic location(s)
+
+Note that none of the articles from the internet archive had a publication tag
+on them, sometimes the publications are in the "title" field, sometimes not,
+and sometimes it's just not even a headline.
+
+There's also the issue of the quality of the models. The confusion matrices for the headlines and body subject are above, I found seaweed to be such a poor fit, I now just classify as aquaculture/irrelevant, then flag it as seaweed if it matches your regular expression -- not the worst idea.

@@ -1,18 +1,76 @@
 """Do reports."""
+import sys
+import re
 import collections
+import string
 
 import pandas
-import seaborn as sns
-from database_model_definitions import Article, AIResultBody, TOP_LEVEL_BODY_CLASSIFICATIONS
+from database_model_definitions import Article, AIResultHeadline, AIResultBody, AIResultLocation, USER_CLASSIFIED_BODY_OPTIONS
+from database_operations import filter_classified_body_by_order
 from database_operations import filter_user_defined_body_to_top_level_tags
 from database import SessionLocal, init_db
 import matplotlib.pyplot as plt
 from sqlalchemy import distinct
+from sqlalchemy import select
+
+def remove_non_printable(s):
+    return ''.join(char for char in s if char.isprintable() and char != ',').encode('utf-8')
 
 
 def main():
     init_db()
     session = SessionLocal()
+
+    # Assuming you have your SQLAlchemy session named session and the models defined as Article, AIResultHeadline, AIResultBody, AIResultLocation
+    query = (
+        select(
+            Article.headline,
+            Article.date,
+            Article.year,
+            Article.source_file,
+            AIResultHeadline.value.label('headline_value'),
+            AIResultBody.value.label('body_value'),
+            AIResultLocation.value.label('location_value')
+        )
+        .join(AIResultHeadline, Article.id_key == AIResultHeadline.article_id)
+        .join(AIResultBody, Article.id_key == AIResultBody.article_id)
+        .join(AIResultLocation, Article.id_key == AIResultLocation.article_id)
+    )
+    headline_set = set()
+    sys.stdout.buffer.write(
+            'headline,year,headline_sentiment,body_subject,location,search_type\n'.encode('utf-8'))
+
+    for headline, date, year, source_file, headline_sentiment, body_subject, location in session.execute(query).all():
+        # Use regular expression to find four consecutive digits
+        if location in [' ', '']:
+            location = None
+        clean_headline = headline.lower().translate(
+            str.maketrans('', '', string.punctuation))
+
+        if clean_headline in headline_set:
+            continue
+        headline_set.add(clean_headline)
+        if year is None and date is not None:
+            match = re.search(r'\b\d{4}\b', date)
+
+            # Extract the year if a match is found
+            year = match.group(0) if match else None
+
+        if 'seaweed_regional_search' in source_file:
+            search_type = 'regional/internet archive'
+        elif 'NexisUni' in source_file:
+            search_type = 'NexisUni'
+        elif 'NewsBank' in source_file:
+            search_type = 'NewsBank'
+        elif 'Froehlich' in source_file:
+            search_type = 'Froehlich raw data'
+        else:
+            search_type = source_file
+        sys.stdout.buffer.write(remove_non_printable(headline))
+
+        sys.stdout.buffer.write(
+            f', {year}, {headline_sentiment}, {body_subject.lower()}, {location}, {search_type}\n'.encode('utf-8'))
+    return
 
     # build a AI subject body confusion matrix
     results = session.query(Article.user_classified_body_subject, AIResultBody.value).join(Article).filter(
