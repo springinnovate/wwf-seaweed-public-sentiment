@@ -34,6 +34,8 @@ class Article(Base):
         back_populates="article")
     geographic_location_ai: Mapped[Optional[List["AIResultLocation"]]] = relationship(
         back_populates="article")
+    url_of_article: Mapped[Optional["UrlOfArticle"]] = relationship(
+        back_populates="article")
     ground_truth_headline_sentiment: Mapped[Optional[str]]
     ground_truth_body_subject: Mapped[Optional[str]]
     ground_truth_body_location: Mapped[Optional[str]]
@@ -68,3 +70,13 @@ class AIResultLocation(Base):
     score: Mapped[float]
     article: Mapped[Article] = relationship(
         back_populates="geographic_location_ai")
+
+
+class UrlOfArticle(Base):
+    __tablename__ = "url_of_article"
+    id_key: Mapped[int] = mapped_column(primary_key=True)
+    article_id = mapped_column(ForeignKey("article.id_key"))
+    raw_url: Mapped[str]
+    article_source_domain: Mapped[str]
+    article: Mapped[Article] = relationship(
+        back_populates="url_of_article")

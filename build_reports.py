@@ -6,7 +6,6 @@ import string
 
 import pandas
 from database_model_definitions import Article, AIResultHeadline, AIResultBody, AIResultLocation, USER_CLASSIFIED_BODY_OPTIONS
-from database_operations import filter_classified_body_by_order
 from database_operations import filter_user_defined_body_to_top_level_tags
 from database import SessionLocal, init_db
 import matplotlib.pyplot as plt
