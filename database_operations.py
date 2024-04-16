@@ -28,6 +28,7 @@ def upsert_articles(session, article_list: List[Article]):
             existing_article.headline_sentiment_ai = new_article.headline_sentiment_ai
             existing_article.body_subject_ai = new_article.body_subject_ai
             existing_article.geographic_location_ai = new_article.geographic_location_ai
+            existing_article.url_of_article = new_article.url_of_article
             existing_article.ground_truth_headline_sentiment = new_article.ground_truth_headline_sentiment
             existing_article.ground_truth_body_subject = new_article.ground_truth_body_subject
             existing_article.ground_truth_body_location = new_article.ground_truth_body_location
