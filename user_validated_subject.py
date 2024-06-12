@@ -86,7 +86,6 @@ def highlight_keywords(body_text, keywords):
 
 
 def main():
-
     init_db()
     session = SessionLocal()
     keywords = [
