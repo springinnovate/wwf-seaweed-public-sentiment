@@ -64,8 +64,6 @@ These components work together to process, train, and apply sentiment analysis o
 
 ### Active Learning Pipeline
 
-### 2a. Active Learning Pipeline
-
 The active learning pipeline for training the headline sentiment model is managed through the script `trainer_headline_sentiment.py`. This script is executed using the command:
 
 `python trainer_headline_sentiment.py --headline_table_path PATH_TO_HEADLINE_TABLE`
@@ -77,7 +75,12 @@ As the script runs, it will produce a series of models, each stored in a subdire
 Users can inspect the `modelperform.csv` table to review the performance metrics of the different model iterations and choose the iteration that best meets their criteria for application. This allows for flexible selection and further refinement of the model based on the active learning results.
 
 ### Headline Sentiment Classification Pipeline
-Description of the classification pipeline used for determining sentiment in headlines.
+
+Once articles have been ingested into the database using the `ingest_froelich_sentiment.py` script, the sentiment model can be applied to unclassified headlines with this command:
+
+`python apply_headline_sentiment.py`
+
+This script automatically applies the trained sentiment model from the previous section to all unclassified headlines in the database. By default, it works directly with the database, but the script can be easily modified to accept input from other sources, such as a CSV table, allowing for flexibility in how the sentiment analysis is applied to different datasets.
 
 ## 2. Article Topic Classification
 
@@ -92,9 +95,6 @@ Description of the active learning process for article topic classification.
 
 ### 2d. Article Classification Pipeline
 Details on the pipeline used for classifying articles into topics.
-
-
-
 
 
 **Training the sentiment model**
