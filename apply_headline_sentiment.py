@@ -15,6 +15,7 @@ HEADLINE_LABEL_TO_SENTIMENT = {
 def main():
     if not os.path.exists(MODEL_PATH):
         print(f'{MODEL_PATH} not found, you need to download it from wherever Sam uploaded it to, ask her!')
+        return
     print(f'load {MODEL_PATH}')
     headline_sentiment_model = pipeline(
         'sentiment-analysis', model=MODEL_PATH, device='cuda')
