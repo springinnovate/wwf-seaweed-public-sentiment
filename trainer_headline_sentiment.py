@@ -18,17 +18,7 @@ import pandas
 import torch
 
 
-with open('huggingface_tokens.txt', 'r', encoding='utf-8') as file:
-    access_token_write = file.readline().strip()
-    login(access_token_write, write_permission=True)
-
-MODELS_TO_TEST = [
-    #'bert-base-uncased',
-    #'roberta-base',
-    #'google/electra-base-generator',
-    #'albert-base-v2',
-    'microsoft/deberta-v3-base',
-    ]
+MODEL_ID = 'microsoft/deberta-v3-base',
 
 
 def map_labels(row):
@@ -128,19 +118,6 @@ def main():
         '--headline_table_path', default='data/papers/froelich_headlines.csv', help='path to headline table')
     args = parser.parse_args()
 
-    model = pipeline(
-            'sentiment-analysis', model=args.model_checkpoint_paths[0], device='cuda')
-    while True:
-        headline = input().rstrip()
-        result = model([headline])
-        if result[0]['label'] == 'LABEL_0':
-            print(f'{headline}: bad')
-        elif result[0]['label'] == 'LABEL_1':
-            print(f'{headline}: neutral')
-        else:
-            print(f'{headline}: good')
-    return
-
     df = pandas.read_csv(args.headline_table_path)
     df['labels'] = df.apply(map_labels, axis=1)
     headline_dataset = Dataset.from_pandas(df)
@@ -163,58 +140,57 @@ def main():
     )
 
     model_performance = open('modelperform.csv', 'w')
-    for model_id in MODELS_TO_TEST:
-        print(f'TRAINING ON: {model_id}')
-        tokenizer = AutoTokenizer.from_pretrained(
-            model_id, token=access_token_write)
+    print(f'TRAINING ON: {MODEL_ID}')
+    tokenizer = AutoTokenizer.from_pretrained(
+        MODEL_ID, token=access_token_write)
 
-        tokenized_train = dataset['train'].map(
-            _make_preprocess_function(tokenizer), batched=True)
-        tokenized_test = dataset['test'].map(
-            _make_preprocess_function(tokenizer), batched=True)
-        data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+    tokenized_train = dataset['train'].map(
+        _make_preprocess_function(tokenizer), batched=True)
+    tokenized_test = dataset['test'].map(
+        _make_preprocess_function(tokenizer), batched=True)
+    data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
-        model = AutoModelForSequenceClassification.from_pretrained(
-            model_id, num_labels=3)
-        optimizer = Adafactor(
-            model.parameters(),
-            scale_parameter=True,
-            relative_step=True,
-            warmup_init=True,
-            lr=None
-        )
-        lr_scheduler = AdafactorSchedule(optimizer)
+    model = AutoModelForSequenceClassification.from_pretrained(
+        MODEL_ID, num_labels=3)
+    optimizer = Adafactor(
+        model.parameters(),
+        scale_parameter=True,
+        relative_step=True,
+        warmup_init=True,
+        lr=None
+    )
+    lr_scheduler = AdafactorSchedule(optimizer)
 
-        model_performance.write(f'\n{model_id}\n')
-        model_performance.write('eval_loss,eval_accuracy\n')
-        trainer = Trainer(
-           model=model,
-           args=training_args,
-           train_dataset=tokenized_train,
-           eval_dataset=tokenized_test,
-           tokenizer=tokenizer,
-           data_collator=data_collator,
-           compute_metrics=compute_metrics,
-           optimizers=(optimizer, lr_scheduler)
-        )
-        lowest_loss = None
-        increase_loss_count = 0
-        for epoch in range(1000):
-            trainer.train()
-            eval_results = trainer.evaluate()
-            model_performance.write(
-                f"{eval_results['eval_loss']},{eval_results['eval_accuracy']}\n")
-            model_performance.flush()
-            print(f'epoch {epoch+1}\n{eval_results}')
-            if lowest_loss is not None and (lowest_loss < eval_results['eval_loss']):
-                increase_loss_count += 1
-                if increase_loss_count > 5:
-                    break
-            else:
-                increase_loss_count = 0
-                lowest_loss = eval_results['eval_loss']
+    model_performance.write(f'\n{MODEL_ID}\n')
+    model_performance.write('eval_loss,eval_accuracy\n')
+    trainer = Trainer(
+       model=model,
+       args=training_args,
+       train_dataset=tokenized_train,
+       eval_dataset=tokenized_test,
+       tokenizer=tokenizer,
+       data_collator=data_collator,
+       compute_metrics=compute_metrics,
+       optimizers=(optimizer, lr_scheduler)
+    )
+    lowest_loss = None
+    increase_loss_count = 0
+    for epoch in range(1000):
+        trainer.train()
+        eval_results = trainer.evaluate()
+        model_performance.write(
+            f"{eval_results['eval_loss']},{eval_results['eval_accuracy']}\n")
+        model_performance.flush()
+        print(f'epoch {epoch+1}\n{eval_results}')
+        if lowest_loss is not None and (lowest_loss < eval_results['eval_loss']):
+            increase_loss_count += 1
+            if increase_loss_count > 5:
+                break
+        else:
+            increase_loss_count = 0
             lowest_loss = eval_results['eval_loss']
-            trainer.save_model(f"{repo_name}/{model_id.replace('/','-')}_{epoch+1}")
+        lowest_loss = eval_results['eval_loss']
+        trainer.save_model(f"{repo_name}/{MODEL_ID.replace('/','-')}_{epoch+1}")
     model_performance.close()
 
 
