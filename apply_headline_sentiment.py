@@ -4,7 +4,7 @@ from transformers import pipeline
 from database_model_definitions import Article, AIResultHeadline
 from database import SessionLocal, init_db
 
-MODEL_PATH = 'wwf-seaweed-headline-sentiment/microsoft-deberta-v3-base_6'
+MODEL_PATH = 'wwf-seaweed-headline-sentiment/microsoft-deberta-v3-base_7'
 HEADLINE_LABEL_TO_SENTIMENT = {
     'LABEL_0': 'bad',
     'LABEL_1': 'neutral',
@@ -13,6 +13,8 @@ HEADLINE_LABEL_TO_SENTIMENT = {
 
 
 def main():
+    if not os.path.exists(MODEL_PATH):
+        print(f'{MODEL_PATH} not found, you need to download it from wherever Sam uploaded it to, ask her!')
     print(f'load {MODEL_PATH}')
     headline_sentiment_model = pipeline(
         'sentiment-analysis', model=MODEL_PATH, device='cuda')
