@@ -8,9 +8,6 @@ from database import SessionLocal, init_db
 import textwrap
 
 
-RELEVANT_SUBJECT_MODEL_PATH = "wwf-seaweed-body-subject-relevant-irrelevant/allenai-longformer-base-4096_19"
-AQUACULTURE_SUBJECT_MODEL_PATH = "wwf-seaweed-body-subject-aquaculture-type/allenai-longformer-base-4096_36"
-
 with open('global_locations.txt', 'r') as location_file:
     GLOBAL_LOCATIONS = [x.strip().lower() for x in location_file.readlines()]
 
