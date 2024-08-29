@@ -23,9 +23,9 @@
 
 ### Execution Environment
 
-The code in this repository requires the installation of `pytorch`, the HuggingFace library, and a variety of other machine learning Python dependencies. For simplicity, a Docker image is provided at `therealspring/convei_abstract_classifier:latest`.
+The code in this repository requires several machine learning Python dependencies, including `pytorch`, the HuggingFace library components, `scikit-learn`, `ninja`, `flash-attention`, and others. Some of these dependencies involve complex compilation and configuration steps that can take hours of computation. To simplify the execution process, a precompiled Docker image is available at `therealspring/convei_abstract_classifier:latest`.
 
-Any of the Python scripts referenced below can be run in the interactive Docker environment by using the following command:
+You can run any of the Python scripts in this repository within the interactive Docker environment using the following command:
 
 `docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm -v .:/workspace therealspring/convei_abstract_classifier:latest`
 
