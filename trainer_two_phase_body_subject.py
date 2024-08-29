@@ -55,15 +55,6 @@ def map_labels(subject_to_label_dict, key, reject_set):
     return _map_labels
 
 
-def map_label_to_word(label):
-    if label == 0:
-        return 'NEGATIVE'
-    elif label == 1:
-        return 'NEUTRAL'
-    elif label == 2:
-        return 'POSITIVE'
-
-
 def compute_metrics(eval_pred):
     print(f'eval_pred: {eval_pred}')
     load_accuracy = load_metric("accuracy", trust_remote_code=True)
@@ -81,59 +72,6 @@ def _make_preprocess_function(tokenizer):
     def _preprocess_function(examples):
         return tokenizer(examples[DATA_KEY], truncation=True, padding='max_length', max_length=50)
     return _preprocess_function
-
-
-def test_model(dataset, checkpoint_path_list):
-    # Replace this with the actual path to your saved model checkpoint
-    for checkpoint_path in checkpoint_path_list:
-        model = AutoModelForSequenceClassification.from_pretrained(
-            checkpoint_path, num_labels=3)
-        tokenizer = AutoTokenizer.from_pretrained(checkpoint_path)
-
-        tokenized_dataset = dataset.map(_make_preprocess_function(tokenizer), batched=True)
-        print(len(tokenized_dataset))
-        # Convert to PyTorch tensors and create a DataLoader
-        tokenized_dataset.set_format('torch', columns=['input_ids', 'attention_mask', 'labels'])
-        dataloader = DataLoader(tokenized_dataset, batch_size=32)
-
-        model.eval()  # Set the model to evaluation mode
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model.to(device)
-
-        predictions = []
-        with torch.no_grad():
-            for index, batch in enumerate(dataloader):
-                print(f'working on batch {index}')
-                batch = {k: v.to(device) for k, v in batch.items()}
-                outputs = model(**batch)
-                logits = outputs.logits
-                preds = torch.argmax(logits, dim=1)
-                predictions.extend(preds.cpu().numpy())
-        print(len(dataset[DATA_KEY]))
-        print(len(dataset['labels']))
-        print(len(predictions))
-
-        with open(f'{os.path.splitext(os.path.basename(checkpoint_path))[0]}_results.csv', 'w') as table:
-            table.write(f'{DATA_KEY},{LABEL_KEY},modeled {LABEL_KEY}\n')
-            confusion_matrix = collections.defaultdict(lambda: collections.defaultdict(int))
-            for headline, expected_id, actual_id in zip(
-                    dataset[DATA_KEY], dataset['labels'], predictions):
-                expected_label = map_label_to_word(expected_id)
-                actual_label = map_label_to_word(actual_id)
-                confusion_matrix[expected_label][actual_label] += 1
-                headline = headline.replace('"', '')
-                table.write(
-                    f'"{headline}",'
-                    f'{expected_label},'
-                    f'{actual_label}\n')
-            table.write('\n')
-            table.write(',' + ','.join(confusion_matrix) + ',accuracy\n')
-            for label in confusion_matrix:
-                table.write(f'{label},' + ','.join(str(confusion_matrix[label][l]) for l in confusion_matrix))
-                total_sum = sum(confusion_matrix[label].values())
-                table.write(f',{confusion_matrix[label][label]/total_sum*100:.2f}%\n')
-
-        print(f'{checkpoint_path} done')
 
 
 RELEVANT_SUBJECT_TAGS = {
