@@ -47,7 +47,7 @@ The database structure is designed to store and manage information related to ar
 
 ## Headline Sentiment Analysis
 
-The first stage of this project involved classifying the sentiment of seaweed-related headlines from the dataset provided in "Froelich et al. 2017.pdf." This paper served as the source for both training and validation data. After the initial model was developed, an active learning cycle was implemented to refine the model with additional data.
+The first stage of this project involved classifying the sentiment of seaweed-related headlines from the dataset provided in "`Froelich et al. 2017.pdf`". This paper served as the source for both training and validation data. After the initial model was developed, an active learning cycle was implemented to refine the model with additional data.
 
 This section includes three key components:
 
@@ -62,7 +62,7 @@ This section includes three key components:
 
 These components work together to process, train, and apply sentiment analysis on seaweed-related headlines, ensuring that the model is continuously improved and accurately reflects the sentiment expressed in the headlines.
 
-### Active Learning Pipeline
+### Headline Sentiment Active Learning Pipeline
 
 The active learning pipeline for training the headline sentiment model is managed through the script `trainer_headline_sentiment.py`. This script is executed using the command:
 
@@ -82,13 +82,9 @@ Once articles have been ingested into the database using the `ingest_froelich_se
 
 This script automatically applies the trained sentiment model from the previous section to all unclassified headlines in the database. By default, it works directly with the database, but the script can be easily modified to accept input from other sources, such as a CSV table, allowing for flexibility in how the sentiment analysis is applied to different datasets.
 
-## 2. Article Topic Classification
+## Article Subject Classification
 
-### 2a. Working Database Structure
-Details on the database structure used for storing and managing article data.
-
-### 2b. Parsing Documents
-Explanation of the document parsing process for extracting relevant information from articles.
+News article data were provided in both Microsoft Word documents and PDF files, with formats varying based on their source. We provide parsers for these formats in the scripts `ingest_docx_articles.py`, `parser_regional_articles.py`, and `ingest_pdf_articles.py`. These scripts populate the same SQLite database used for headline sentiment analysis, and they also support the article body topic, sentiment, and location mapping described in the sections below.
 
 ### 2c. Active Learning Pipeline
 Description of the active learning process for article topic classification.
