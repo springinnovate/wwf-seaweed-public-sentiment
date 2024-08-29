@@ -1,8 +1,20 @@
 # WWF Seaweed Media Sentiment Pipeline
 
+## Enviroment
+
+### Execution Environment
+
+The code in this repository requires the installation of `pytorch`, the HuggingFace library, and a variety of other machine learning Python dependencies. For simplicity, a Docker image is provided at `therealspring/convei_abstract_classifier:latest`.
+
+Any of the Python scripts referenced below can be run in the interactive Docker environment by using the following command:
+
+`docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm -v .:/workspace therealspring/convei_abstract_classifier:latest`
+
+### Database Structure
+
 The database structure is designed to store and manage information related to articles, headlines, their associated metadata, and the results of AI-based sentiment and topic classifications. The primary components are defined in `database_model_definitions.py` `database_operations.py` as follows:
 
-### Article Table
+#### Article Table
 - **ID Key**: Unique identifier for each article.
 - **Headline**: The title or main heading of the article.
 - **Body**: The full text of the article (optional).
@@ -20,32 +32,33 @@ The database structure is designed to store and manage information related to ar
 - **User Classified Body Location**: User-provided classification of the article's location information (optional).
 - **Source File**: The source file from which the article was extracted (optional).
 
-### AIResultHeadline Table
+#### AIResultHeadline Table
 - **ID Key**: Unique identifier for each AI-generated headline sentiment result.
 - **Article ID**: Foreign key linking to the associated article.
 - **Value**: The sentiment value classified by the AI.
 - **Score**: Confidence score of the AI classification.
 
-### AIResultBody Table
+#### AIResultBody Table
 - **ID Key**: Unique identifier for each AI-generated body subject classification result.
 - **Article ID**: Foreign key linking to the associated article.
 - **Value**: The subject classification value provided by the AI.
 - **Score**: Confidence score of the AI classification.
 
-### AIResultLocation Table
+#### AIResultLocation Table
 - **ID Key**: Unique identifier for each AI-generated geographic location classification result.
 - **Article ID**: Foreign key linking to the associated article.
 - **Value**: The geographic location classified by the AI.
 - **Score**: Confidence score of the AI classification.
 
-### UrlOfArticle Table
+#### UrlOfArticle Table
 - **ID Key**: Unique identifier for each URL record.
 - **Article ID**: Foreign key linking to the associated article.
 - **Raw URL**: The raw URL of the article.
 - **Article Source Domain**: The domain name from which the article was sourced.
 
+## User Facing Scripts
 
-## Headline Sentiment Analysis
+### Headline Sentiment Analysis
 
 The first stage of this project involved classifying the sentiment of seaweed-related headlines from the dataset provided in "`Froelich et al. 2017.pdf`". This paper served as the source for both training and validation data. After the initial model was developed, an active learning cycle was implemented to refine the model with additional data.
 
@@ -62,7 +75,7 @@ This section includes three key components:
 
 These components work together to process, train, and apply sentiment analysis on seaweed-related headlines, ensuring that the model is continuously improved and accurately reflects the sentiment expressed in the headlines.
 
-### Headline Sentiment Active Learning Pipeline
+#### Headline Sentiment Active Learning Pipeline
 
 The active learning pipeline for training the headline sentiment model is managed through the script `trainer_headline_sentiment.py`. This script is executed using the command:
 
@@ -74,7 +87,7 @@ As the script runs, it will produce a series of models, each stored in a subdire
 
 Users can inspect the `modelperform.csv` table to review the performance metrics of the different model iterations and choose the iteration that best meets their criteria for application. This allows for flexible selection and further refinement of the model based on the active learning results.
 
-### Headline Sentiment Classification Pipeline
+#### Headline Sentiment Classification Pipeline
 
 Once articles have been ingested into the database using the `ingest_froelich_sentiment.py` script, the sentiment model can be applied to unclassified headlines with this command:
 
@@ -82,11 +95,11 @@ Once articles have been ingested into the database using the `ingest_froelich_se
 
 This script automatically applies the trained sentiment model from the previous section to all unclassified headlines in the database. By default, it works directly with the database, but the script can be easily modified to accept input from other sources, such as a CSV table, allowing for flexibility in how the sentiment analysis is applied to different datasets.
 
-## Article Subject Classification
+### Article Subject Classification
 
 News article data were provided in both Microsoft Word documents and PDF files, with formats varying based on their source. We provide parsers for these formats in the scripts `ingest_docx_articles.py`, `parser_regional_articles.py`, and `ingest_pdf_articles.py`. These scripts populate the same SQLite database used for headline sentiment analysis, and they also support the article body topic, sentiment, and location mapping described in the sections below.
 
-### Article Subject Active Learning Pipeline
+#### Article Subject Active Learning Pipeline
 
 Article subject training was conducted in two phases: the first phase classified articles as relevant or irrelevant, and the second phase further classified relevant articles into subjects related to seaweed aquaculture and other types of aquaculture.
 
@@ -96,17 +109,17 @@ Once the database contains a sufficient number of classified articles, users can
 
 This process is typically repeated based on the performance of the model during the classification stage, allowing for iterative improvements.
 
-### Article Subject Classification Pipeline
+#### Article Subject Classification Pipeline
 
 Once the models are built, the body subjects can be classified using the script `python apply_body_subject_classification.py`. By default, this classification process utilizes the pretrained models `wwf-seaweed-body-subject-relevant-irrelevant/allenai-longformer-base-4096_19` and `wwf-seaweed-body-subject-aquaculture-type/allenai-longformer-base-4096_36`, which can be downloaded from `SOMEWHERE ONLINE THAT SAM WILL FIGURE OUT`.
 
 No additional user input is required; the pipeline will automatically classify all article bodies in the database created during the ingestion step.
 
-### Article Body Location Classification
+#### Article Body Location Classification
 
 To classify the global locations mentioned in the article bodies, you can use the script `apply_body_location.py`. This script utilizes the `dbmdz/bert-large-cased-finetuned-conll03-english` model to perform location analysis on the text of the articles. The results are automatically updated in the database.
 
-## Report Generation
+### Report Generation
 
 We provide the `build_reports.py` script as an example of how article results can be displayed, analyzed, and post-processed for various purposes. This script generates goodness-of-fit confusion matrices, tracks sentiment and subject counts over time, and calculates other statistics useful for analysis.
 
