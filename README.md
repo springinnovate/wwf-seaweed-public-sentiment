@@ -1,5 +1,24 @@
 # WWF Seaweed Media Sentiment Pipeline
 
+## Table of Contents
+- [Environment](#environment)
+  - [Execution Environment](#execution-environment)
+  - [Database Structure](#database-structure)
+    - [Article Table](#article-table)
+    - [AIResultHeadline Table](#airesultheadline-table)
+    - [AIResultBody Table](#airesultbody-table)
+    - [AIResultLocation Table](#airesultlocation-table)
+    - [UrlOfArticle Table](#urlofarticle-table)
+- [User Facing Scripts](#user-facing-scripts)
+  - [Headline Sentiment Analysis](#headline-sentiment-analysis)
+    - [Headline Sentiment Active Learning Pipeline](#headline-sentiment-active-learning-pipeline)
+    - [Headline Sentiment Classification Pipeline](#headline-sentiment-classification-pipeline)
+  - [Article Subject Classification](#article-subject-classification)
+    - [Article Subject Active Learning Pipeline](#article-subject-active-learning-pipeline)
+    - [Article Subject Classification Pipeline](#article-subject-classification-pipeline)
+    - [Article Body Location Classification](#article-body-location-classification)
+  - [Report Generation](#report-generation)
+
 ## Enviroment
 
 ### Execution Environment
