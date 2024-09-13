@@ -52,7 +52,7 @@ def parse_pdf(file_path):
             body=body_text,
             date=date_text,
             publication=publication_text,
-            source_file=file_path,
+            source_file=str(file_path),
             )
         new_article_list.append(new_article)
     print(f'time to parse {file_path} = {time.time()-start_time:.1f}s')
