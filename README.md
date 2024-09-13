@@ -23,10 +23,9 @@
 
 ### Execution Environment
 
-The code in this repository requires the installation of `pytorch`, the HuggingFace library, and a variety of other machine learning Python dependencies. For simplicity, a Docker image is provided at `therealspring/convei_abstract_classifier:latest`.
+The code in this repository requires several machine learning Python dependencies, including `pytorch`, the HuggingFace library components, `scikit-learn`, `ninja`, `flash-attention`, and others. Some of these dependencies involve complex compilation and configuration steps that can take hours of computation. To simplify the execution process, a precompiled Docker image is available at `therealspring/convei_abstract_classifier:latest`.
 
-Any of the Python scripts referenced below can be run in the interactive Docker environment by using the following command:
->>>>>>> a62760c (updating readme)
+You can run any of the Python scripts in this repository within the interactive Docker environment using the following command:
 
 `docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm -v .:/workspace therealspring/convei_abstract_classifier:latest`
 
@@ -115,12 +114,7 @@ Once articles have been ingested into the database using the `ingest_froelich_se
 
 This script automatically applies the trained sentiment model from the previous section to all unclassified headlines in the database. By default, it works directly with the database, but the script can be easily modified to accept input from other sources, such as a CSV table, allowing for flexibility in how the sentiment analysis is applied to different datasets.
 
-<<<<<<< HEAD
-- **Parser**: `ingest_froelich_sentiment.py`
-  - Responsible for parsing the sentiment data from "Froelich et al. 2017.pdf" and preparing it for use in training and validation.
-=======
 ### Article Subject Classification
->>>>>>> a62760c (updating readme)
 
 - **Trainer**: `trainer_headline_sentiment.py`
   - Used to train the headline sentiment model based on the parsed data. This script facilitates the training process using the data from the Froelich paper as well as additional data gathered through active learning.
