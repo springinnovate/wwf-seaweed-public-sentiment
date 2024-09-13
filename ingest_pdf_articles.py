@@ -1,5 +1,6 @@
 """Tracer code to figure out how to parse out DocX files."""
 import io
+import concurrent.futures
 from pathlib import Path
 import argparse
 import re
@@ -72,15 +73,22 @@ def main():
     db = SessionLocal()
 
     with ProcessPoolExecutor() as executor:
-        future_list = []
-        for index, file_path in enumerate(pdf_file_path_list):
-            article = parse_pdf(file_path)
-            print(article)
-            return
-            #future = executor.submit(parse_pdf, file_path)
-            future_list.append(future)
-        article_list = [
-            article for future in future_list for article in future.result()]
+        future_list = {
+            executor.submit(parse_pdf, file_path): file_path for file_path in pdf_file_path_list}
+
+        # Iterate over futures to collect results and handle exceptions
+        article_list = []
+        for future in concurrent.futures.as_completed(future_list):
+            file_path = future_list[future]
+            try:
+                # Get the result of the future
+                articles = future.result()
+                article_list.extend(articles)
+            except Exception as e:
+                # Log the error and continue
+                with open('ingest_pdf_error_log.txt', 'a') as error_file:
+                    error_file.write(f'on {file_path}; Error processing file: {e}\n')
+
     upsert_articles(db, article_list)
     db.commit()
     db.close()
