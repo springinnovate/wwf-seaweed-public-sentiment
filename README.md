@@ -23,9 +23,10 @@
 
 ### Execution Environment
 
-The code in this repository requires several machine learning Python dependencies, including `pytorch`, the HuggingFace library components, `scikit-learn`, `ninja`, `flash-attention`, and others. Some of these dependencies involve complex compilation and configuration steps that can take hours of computation. To simplify the execution process, a precompiled Docker image is available at `therealspring/convei_abstract_classifier:latest`.
+The code in this repository requires the installation of `pytorch`, the HuggingFace library, and a variety of other machine learning Python dependencies. For simplicity, a Docker image is provided at `therealspring/convei_abstract_classifier:latest`.
 
-You can run any of the Python scripts in this repository within the interactive Docker environment using the following command:
+Any of the Python scripts referenced below can be run in the interactive Docker environment by using the following command:
+>>>>>>> a62760c (updating readme)
 
 `docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm -v .:/workspace therealspring/convei_abstract_classifier:latest`
 
@@ -94,7 +95,7 @@ This section includes three key components:
 
 These components work together to process, train, and apply sentiment analysis on seaweed-related headlines, ensuring that the model is continuously improved and accurately reflects the sentiment expressed in the headlines.
 
-### Headline Sentiment Active Learning Pipeline
+#### Headline Sentiment Active Learning Pipeline
 
 The active learning pipeline for training the headline sentiment model is managed through the script `trainer_headline_sentiment.py`. This script is executed using the command:
 
@@ -106,7 +107,7 @@ As the script runs, it will produce a series of models, each stored in a subdire
 
 Users can inspect the `modelperform.csv` table to review the performance metrics of the different model iterations and choose the iteration that best meets their criteria for application. This allows for flexible selection and further refinement of the model based on the active learning results.
 
-### Headline Sentiment Classification Pipeline
+#### Headline Sentiment Classification Pipeline
 
 Once articles have been ingested into the database using the `ingest_froelich_sentiment.py` script, the sentiment model can be applied to unclassified headlines with this command:
 
@@ -114,13 +115,17 @@ Once articles have been ingested into the database using the `ingest_froelich_se
 
 This script automatically applies the trained sentiment model from the previous section to all unclassified headlines in the database. By default, it works directly with the database, but the script can be easily modified to accept input from other sources, such as a CSV table, allowing for flexibility in how the sentiment analysis is applied to different datasets.
 
+<<<<<<< HEAD
 - **Parser**: `ingest_froelich_sentiment.py`
   - Responsible for parsing the sentiment data from "Froelich et al. 2017.pdf" and preparing it for use in training and validation.
+=======
+### Article Subject Classification
+>>>>>>> a62760c (updating readme)
 
 - **Trainer**: `trainer_headline_sentiment.py`
   - Used to train the headline sentiment model based on the parsed data. This script facilitates the training process using the data from the Froelich paper as well as additional data gathered through active learning.
 
-### Article Subject Active Learning Pipeline
+#### Article Subject Active Learning Pipeline
 
 Article subject training was conducted in two phases: the first phase classified articles as relevant or irrelevant, and the second phase further classified relevant articles into subjects related to seaweed aquaculture and other types of aquaculture.
 
@@ -130,17 +135,17 @@ Once the database contains a sufficient number of classified articles, users can
 
 This process is typically repeated based on the performance of the model during the classification stage, allowing for iterative improvements.
 
-### Article Subject Classification Pipeline
+#### Article Subject Classification Pipeline
 
 Once the models are built, the body subjects can be classified using the script `python apply_body_subject_classification.py`. By default, this classification process utilizes the pretrained models `wwf-seaweed-body-subject-relevant-irrelevant/allenai-longformer-base-4096_19` and `wwf-seaweed-body-subject-aquaculture-type/allenai-longformer-base-4096_36`, which can be downloaded from `SOMEWHERE ONLINE THAT SAM WILL FIGURE OUT`.
 
 No additional user input is required; the pipeline will automatically classify all article bodies in the database created during the ingestion step.
 
-### Article Body Location Classification
+#### Article Body Location Classification
 
 To classify the global locations mentioned in the article bodies, you can use the script `apply_body_location.py`. This script utilizes the `dbmdz/bert-large-cased-finetuned-conll03-english` model to perform location analysis on the text of the articles. The results are automatically updated in the database.
 
-## Report Generation
+### Report Generation
 
 We provide the `build_reports.py` script as an example of how article results can be displayed, analyzed, and post-processed for various purposes. This script generates goodness-of-fit confusion matrices, tracks sentiment and subject counts over time, and calculates other statistics useful for analysis.
 
