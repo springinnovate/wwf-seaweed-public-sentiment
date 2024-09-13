@@ -96,8 +96,6 @@ These components work together to process, train, and apply sentiment analysis o
 
 ### Active Learning Pipeline
 
-### 2a. Active Learning Pipeline
-
 The active learning pipeline for training the headline sentiment model is managed through the script `trainer_headline_sentiment.py`. This script is executed using the command:
 
 `python trainer_headline_sentiment.py --headline_table_path PATH_TO_HEADLINE_TABLE`
@@ -108,7 +106,13 @@ As the script runs, it will produce a series of models, each stored in a subdire
 
 Users can inspect the `modelperform.csv` table to review the performance metrics of the different model iterations and choose the iteration that best meets their criteria for application. This allows for flexible selection and further refinement of the model based on the active learning results.
 
-This section includes three key components:
+### Headline Sentiment Classification Pipeline
+
+Once articles have been ingested into the database using the `ingest_froelich_sentiment.py` script, the sentiment model can be applied to unclassified headlines with this command:
+
+`python apply_headline_sentiment.py`
+
+This script automatically applies the trained sentiment model from the previous section to all unclassified headlines in the database. By default, it works directly with the database, but the script can be easily modified to accept input from other sources, such as a CSV table, allowing for flexibility in how the sentiment analysis is applied to different datasets.
 
 - **Parser**: `ingest_froelich_sentiment.py`
   - Responsible for parsing the sentiment data from "Froelich et al. 2017.pdf" and preparing it for use in training and validation.
@@ -125,6 +129,7 @@ These components work together to process, train, and apply sentiment analysis o
 
 The active learning pipeline for training the headline sentiment model is managed through the script `trainer_headline_sentiment.py`. This script is executed using the command:
 
+<<<<<<< HEAD
 `python trainer_headline_sentiment.py --headline_table_path PATH_TO_HEADLINE_TABLE`
 
 The `PATH_TO_HEADLINE_TABLE` should point to a table containing the headers `headline` and `label`, where `headline` represents the text of the article headlines and `label` represents the sentiment classification 0 (negative), 1 (neutral), or 2 (positive).
@@ -132,6 +137,9 @@ The `PATH_TO_HEADLINE_TABLE` should point to a table containing the headers `hea
 As the script runs, it will produce a series of models, each stored in a subdirectory within `wwf-seaweed-headline-sentiment`. The performance of each model iteration is logged in a table called `modelperform.csv`, located in the root directory of the repository.
 
 Users can inspect the `modelperform.csv` table to review the performance metrics of the different model iterations and choose the iteration that best meets their criteria for application. This allows for flexible selection and further refinement of the model based on the active learning results.
+=======
+**Training the sentiment model**
+>>>>>>> 4ca190d (updating headline sentiment)
 
 #### Headline Sentiment Classification Pipeline
 
