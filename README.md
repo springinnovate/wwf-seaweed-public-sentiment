@@ -116,8 +116,7 @@ This script automatically applies the trained sentiment model from the previous 
 
 ### Article Subject Classification
 
-- **Trainer**: `trainer_headline_sentiment.py`
-  - Used to train the headline sentiment model based on the parsed data. This script facilitates the training process using the data from the Froelich paper as well as additional data gathered through active learning.
+News article data were provided in both Microsoft Word documents and PDF files, with formats varying based on their source. We provide parsers for these formats in the scripts `ingest_docx_articles.py`, `parser_regional_articles.py`, and `ingest_pdf_articles.py`. These scripts populate the same SQLite database used for headline sentiment analysis, and they also support the article body topic, sentiment, and location mapping described in the sections below.
 
 #### Article Subject Active Learning Pipeline
 
