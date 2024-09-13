@@ -50,15 +50,13 @@ def main():
         pdf_file_path
         for pdf_file_glob in args.path_to_files
         for pdf_file_path in Path().rglob(pdf_file_glob)]
-    print(pdf_file_path_list)
-    return
 
     init_db()
     db = SessionLocal()
 
     with ProcessPoolExecutor() as executor:
         future_list = []
-        for index, file_path in enumerate(glob.glob(args.path_to_files)):
+        for index, file_path in enumerate(pdf_file_path_list):
             future = executor.submit(parse_pdf, file_path)
             future_list.append(future)
         article_list = [
