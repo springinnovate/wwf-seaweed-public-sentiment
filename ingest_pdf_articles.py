@@ -1,7 +1,7 @@
 """Tracer code to figure out how to parse out DocX files."""
+import io
 from pathlib import Path
 import argparse
-import glob
 import re
 import time
 
@@ -18,7 +18,24 @@ RE_TEXT = '(.*(?:\n[^\n]+)+)\n\n(\S* \d{1,2}, \d{4}) \| (.*)'
 def parse_pdf(file_path):
     start_time = time.time()
     print(f'parsing {file_path}')
-    reader = PdfReader(file_path)
+
+    with open(file_path, 'rb') as f:
+        content = f.read()
+
+    # Find the start of the PDF header (%PDF)
+    pdf_start = content.find(b'%PDF')
+
+    if pdf_start == -1:
+        raise ValueError("Could not find valid PDF header")
+
+    # Create an in-memory bytes stream from the valid PDF portion
+    valid_pdf_content = content[pdf_start:]
+    pdf_stream = io.BytesIO(valid_pdf_content)
+
+    # Use PdfReader to read from the in-memory byte stream
+    reader = PdfReader(pdf_stream)
+
+    print('we got the reader')
     articles_text = ''
     for page_index, page in enumerate(reader.pages):
         articles_text += page.extract_text(extraction_mode="layout")+'\n\n'
@@ -57,7 +74,10 @@ def main():
     with ProcessPoolExecutor() as executor:
         future_list = []
         for index, file_path in enumerate(pdf_file_path_list):
-            future = executor.submit(parse_pdf, file_path)
+            article = parse_pdf(file_path)
+            print(article)
+            return
+            #future = executor.submit(parse_pdf, file_path)
             future_list.append(future)
         article_list = [
             article for future in future_list for article in future.result()]
