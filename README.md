@@ -79,7 +79,7 @@ The database structure is designed to store and manage information related to ar
 
 ### Headline Sentiment Analysis
 
-The first stage of this project involved classifying the sentiment of seaweed-related headlines from the dataset provided in "Froelich et al. 2017.pdf." This paper served as the source for both training and validation data. After the initial model was developed, an active learning cycle was implemented to refine the model with additional data.
+The first stage of this project involved classifying the sentiment of seaweed-related headlines from the dataset provided in "`Froelich et al. 2017.pdf`". This paper served as the source for both training and validation data. After the initial model was developed, an active learning cycle was implemented to refine the model with additional data.
 
 This section includes three key components:
 
@@ -94,7 +94,7 @@ This section includes three key components:
 
 These components work together to process, train, and apply sentiment analysis on seaweed-related headlines, ensuring that the model is continuously improved and accurately reflects the sentiment expressed in the headlines.
 
-### Active Learning Pipeline
+### Headline Sentiment Active Learning Pipeline
 
 The active learning pipeline for training the headline sentiment model is managed through the script `trainer_headline_sentiment.py`. This script is executed using the command:
 
@@ -129,17 +129,7 @@ These components work together to process, train, and apply sentiment analysis o
 
 The active learning pipeline for training the headline sentiment model is managed through the script `trainer_headline_sentiment.py`. This script is executed using the command:
 
-<<<<<<< HEAD
-`python trainer_headline_sentiment.py --headline_table_path PATH_TO_HEADLINE_TABLE`
-
-The `PATH_TO_HEADLINE_TABLE` should point to a table containing the headers `headline` and `label`, where `headline` represents the text of the article headlines and `label` represents the sentiment classification 0 (negative), 1 (neutral), or 2 (positive).
-
-As the script runs, it will produce a series of models, each stored in a subdirectory within `wwf-seaweed-headline-sentiment`. The performance of each model iteration is logged in a table called `modelperform.csv`, located in the root directory of the repository.
-
-Users can inspect the `modelperform.csv` table to review the performance metrics of the different model iterations and choose the iteration that best meets their criteria for application. This allows for flexible selection and further refinement of the model based on the active learning results.
-=======
 **Training the sentiment model**
->>>>>>> 4ca190d (updating headline sentiment)
 
 #### Headline Sentiment Classification Pipeline
 
