@@ -1,4 +1,5 @@
 """Tracer code to figure out how to parse out DocX files."""
+from pathlib import Path
 import argparse
 import glob
 import re
@@ -42,8 +43,15 @@ def parse_pdf(file_path):
 
 def main():
     parser = argparse.ArgumentParser(description='parse pdf')
-    parser.add_argument('path_to_files', help='Path/wildcard to pdf files')
+    parser.add_argument('path_to_files', nargs='+', help='Path/wildcard to pdf files')
     args = parser.parse_args()
+
+    pdf_file_path_list = [
+        pdf_file_path
+        for pdf_file_glob in args.path_to_files
+        for pdf_file_path in Path().rglob(pdf_file_glob)]
+    print(pdf_file_path_list)
+    return
 
     init_db()
     db = SessionLocal()

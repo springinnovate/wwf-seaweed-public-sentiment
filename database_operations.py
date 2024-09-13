@@ -1,15 +1,6 @@
 """Database definitions for news articles and their classifications."""
-from database_model_definitions import Article, IRRELEVANT_TAG_LIST, IRRELEVANT_TAG, SEAWEED_TAG, OTHER_AQUACULTURE_TAG
+from database_model_definitions import Article
 from typing import List
-
-
-def filter_user_defined_body_to_top_level_tags(string_of_classified):
-    for classification in IRRELEVANT_TAG_LIST:
-        if classification in string_of_classified:
-            return IRRELEVANT_TAG
-    for classification in [SEAWEED_TAG, OTHER_AQUACULTURE_TAG]:
-        if classification in string_of_classified:
-            return classification
 
 
 def upsert_articles(session, article_list: List[Article]):
