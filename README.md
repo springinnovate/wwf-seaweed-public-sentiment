@@ -140,45 +140,7 @@ No additional user input is required; the pipeline will automatically classify a
 
 To classify the global locations mentioned in the article bodies, you can use the script `apply_body_location.py`. This script utilizes the `dbmdz/bert-large-cased-finetuned-conll03-english` model to perform location analysis on the text of the articles. The results are automatically updated in the database.
 
-#### Headline Sentiment Active Learning Pipeline
-
-The active learning pipeline for training the headline sentiment model is managed through the script `trainer_headline_sentiment.py`. This script is executed using the command:
-
-**Training the sentiment model**
-
-#### Headline Sentiment Classification Pipeline
-
-Once articles have been ingested into the database using the `ingest_froelich_sentiment.py` script, the sentiment model can be applied to unclassified headlines with this command:
-
-`python apply_headline_sentiment.py`
-
-This script automatically applies the trained sentiment model from the previous section to all unclassified headlines in the database. By default, it works directly with the database, but the script can be easily modified to accept input from other sources, such as a CSV table, allowing for flexibility in how the sentiment analysis is applied to different datasets.
-
-### Article Subject Classification
-
-News article data were provided in both Microsoft Word documents and PDF files, with formats varying based on their source. We provide parsers for these formats in the scripts `ingest_docx_articles.py`, `parser_regional_articles.py`, and `ingest_pdf_articles.py`. These scripts populate the same SQLite database used for headline sentiment analysis, and they also support the article body topic, sentiment, and location mapping described in the sections below.
-
-#### Article Subject Active Learning Pipeline
-
-Article subject training was conducted in two phases: the first phase classified articles as relevant or irrelevant, and the second phase further classified relevant articles into subjects related to seaweed aquaculture and other types of aquaculture.
-
-The pipeline begins with the script `python user_validates_subject.py`, which allows the user to review and classify unclassified articles in the database created during the ingestion step. The user selects the appropriate classification, and the process continues iteratively.
-
-Once the database contains a sufficient number of classified articles, users can run `python trainer_two_phase_body_subject.py` to train both the relevant/irrelevant classifier and the subject-specific classifier. The resulting models are stored in directories named `wwf-seaweed-body-subject-{aquaculture-type|relevant-irrelevant}`.
-
-This process is typically repeated based on the performance of the model during the classification stage, allowing for iterative improvements.
-
-#### Article Subject Classification Pipeline
-
-Once the models are built, the body subjects can be classified using the script `python apply_body_subject_classification.py`. By default, this classification process utilizes the pretrained models `wwf-seaweed-body-subject-relevant-irrelevant/allenai-longformer-base-4096_19` and `wwf-seaweed-body-subject-aquaculture-type/allenai-longformer-base-4096_36`, which can be downloaded from `SOMEWHERE ONLINE THAT SAM WILL FIGURE OUT`.
-
-No additional user input is required; the pipeline will automatically classify all article bodies in the database created during the ingestion step.
-
-#### Article Body Location Classification
-
-To classify the global locations mentioned in the article bodies, you can use the script `apply_body_location.py`. This script utilizes the `dbmdz/bert-large-cased-finetuned-conll03-english` model to perform location analysis on the text of the articles. The results are automatically updated in the database.
-
-### Report Generation
+## Report Generation
 
 We provide the `build_reports.py` script as an example of how article results can be displayed, analyzed, and post-processed for various purposes. This script generates goodness-of-fit confusion matrices, tracks sentiment and subject counts over time, and calculates other statistics useful for analysis.
 
