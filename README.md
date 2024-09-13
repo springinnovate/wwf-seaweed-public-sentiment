@@ -120,10 +120,25 @@ This script automatically applies the trained sentiment model from the previous 
 - **Trainer**: `trainer_headline_sentiment.py`
   - Used to train the headline sentiment model based on the parsed data. This script facilitates the training process using the data from the Froelich paper as well as additional data gathered through active learning.
 
-- **Application**: `apply_headline_sentiment.py`
-  - This script applies the trained sentiment model to new headlines. The model that is used in practice is located at `SOMEWHERE ONLINE THAT SAM WILL FIGURE OUT`. The model should be downloaded and extracted into this repository under the path `wwf-seaweed-headline-sentiment/microsoft-deberta-v3-base_7`. This path is referenced in the `apply_headline_sentiment.py` pipeline for sentiment analysis.
+### Article Subject Active Learning Pipeline
 
-These components work together to process, train, and apply sentiment analysis on seaweed-related headlines, ensuring that the model is continuously improved and accurately reflects the sentiment expressed in the headlines.
+Article subject training was conducted in two phases: the first phase classified articles as relevant or irrelevant, and the second phase further classified relevant articles into subjects related to seaweed aquaculture and other types of aquaculture.
+
+The pipeline begins with the script `python user_validates_subject.py`, which allows the user to review and classify unclassified articles in the database created during the ingestion step. The user selects the appropriate classification, and the process continues iteratively.
+
+Once the database contains a sufficient number of classified articles, users can run `python trainer_two_phase_body_subject.py` to train both the relevant/irrelevant classifier and the subject-specific classifier. The resulting models are stored in directories named `wwf-seaweed-body-subject-{aquaculture-type|relevant-irrelevant}`.
+
+This process is typically repeated based on the performance of the model during the classification stage, allowing for iterative improvements.
+
+### Article Subject Classification Pipeline
+
+Once the models are built, the body subjects can be classified using the script `python apply_body_subject_classification.py`. By default, this classification process utilizes the pretrained models `wwf-seaweed-body-subject-relevant-irrelevant/allenai-longformer-base-4096_19` and `wwf-seaweed-body-subject-aquaculture-type/allenai-longformer-base-4096_36`, which can be downloaded from `SOMEWHERE ONLINE THAT SAM WILL FIGURE OUT`.
+
+No additional user input is required; the pipeline will automatically classify all article bodies in the database created during the ingestion step.
+
+### Article Body Location Classification
+
+To classify the global locations mentioned in the article bodies, you can use the script `apply_body_location.py`. This script utilizes the `dbmdz/bert-large-cased-finetuned-conll03-english` model to perform location analysis on the text of the articles. The results are automatically updated in the database.
 
 #### Headline Sentiment Active Learning Pipeline
 
