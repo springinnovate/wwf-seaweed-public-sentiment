@@ -181,12 +181,12 @@ def parse_csv(csv_path):
     df_combined = grouped['item_text'].apply(
         lambda x: ' '.join(x.dropna().astype(str).str.strip())
     ).reset_index(name='body')
-
+    print(df_combined)
     article_list = []
     for index, row in df_combined.iterrows():
         new_article = Article(
             headline=row[item_title],
-            body=row['item_text'],
+            body=row['body'],
             date=row['item_pub_date'],
             source_file=str(csv_path),
         )
