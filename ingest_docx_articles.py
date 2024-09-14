@@ -167,7 +167,8 @@ def main():
     parser.add_argument('path_to_files', nargs='+', help='Path/wildcard to docx files')
     args = parser.parse_args()
 
-    parse_csv('./data/papers/2024-Seaweed-Regional/Results-SeaweedRegionalSearch2024.csv')
+    parse_csv('./data/papers/2024-Seaweed-Regional/seaweedRegionalSearch_Manual_ScrapedData2024.csv')
+    #parse_csv('./data/papers/2024-Seaweed-Regional/Results-SeaweedRegionalSearch2024.csv')
     return
     #parse_docx('data/papers/2024-Seaweed-NexisUni/NexisUni_Seaweed_2024.DOCX')
     #parse_docx('data/papers/Aquaculture-NexisUni-2024/NexisUni_Aquaculture_2024_1-100.DOCX')
