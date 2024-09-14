@@ -64,57 +64,46 @@ def parse_as_bibstyle(orignal_file_path, paragraph_iter):
 
 
 def parse_as_user_name(original_file_path, paragraph_iter):
+    start_time = time.time()
     seen_number = False
     while True:
         text = next(paragraph_iter)
         print(text)
-        sys.exit()
         isdigit = text[0].isdigit()
         if seen_number and not isdigit:
             headline_text = text
             break
         if not seen_number and isdigit:
             seen_number = True
-    print(headline_text)
-    sys.exit()
-        # if text != '':
-        #     break
     headline_text = text
-    print(f'headlien text: {headline_text}')
-    sys.exit()
-    publication_text = next(paragraph_iter)
-    date_text = next(paragraph_iter)
-    for text in paragraph_iter:
-        if text == 'Body':
-            break
+    print(f'headline text: {headline_text}')
+    article_list = []
+    while True:
+        try:
+            publication_text = next(paragraph_iter)
+            date_text = next(paragraph_iter)
+            for text in paragraph_iter:
+                if text == 'Body':
+                    break
 
-    body_text = ''
-    for text in paragraph_iter:
-        if text == 'Classification' or text.startswith('----------------'):
-            break
-        body_text += text
+            body_text = ''
+            for text in paragraph_iter:
+                if text == 'End of Document':
+                    break
+                body_text += text
 
-    relevant_subjects = []
-    locations = []
-    for line in paragraph_iter:
-        if line.startswith('Subject:\xa0'):
-            subjects = re.findall(r'([A-Z][A-Z&\s]+)\s\(\d+%\)', line)
-            relevant_subjects = [subject for subject in subjects]
-        if line.startswith('Geographic'):
-            locations = re.findall(r'([A-Z][A-Z&\s,]+)\s\(\d+%\)', line)
-    relevant_subject_str = ', '.join(relevant_subjects)
-    location_str = '; '.join(locations)
+            new_article = Article(
+                headline=headline_text,
+                body=body_text,
+                date=date_text,
+                publication=publication_text,
+            )
+            article_list.append(new_article)
+            headline_text = next(paragraph_iter)
+        except StopIteration:
+            break
     print(f'time to parse = {time.time()-start_time}s')
-    new_article = Article(
-        headline=headline_text,
-        body=body_text,
-        date=date_text,
-        publication=publication_text,
-        source_file=file_path,
-        ground_truth_body_subject=relevant_subject_str,
-        ground_truth_body_location=location_str,
-        )
-    return new_article
+    return article_list
 
 
 def parse_docx(file_path):
@@ -140,11 +129,10 @@ def parse_docx(file_path):
     if first_line.startswith('Bibliography'):
         return parse_as_bibstyle(file_path, paragraph_iter)
     elif first_line.startswith('User Name: ='):
-        return parse_as_user_name(paragraph_iter)
+        return parse_as_user_name(file_path, paragraph_iter)
     else:
         print(f'"{file_path}" has unknown first line: {first_line}')
         return
-
 
 
 def main():
@@ -155,8 +143,8 @@ def main():
     #parse_docx('data/papers/2024-Seaweed-NexisUni/NexisUni_Seaweed_2024.DOCX')
     #parse_docx('data/papers/Aquaculture-NexisUni-2024/NexisUni_Aquaculture_2024_1-100.DOCX')
     #parse_docx('data/papers/Aquaculture-NexisUni-2024/NexisUni_Aquaculture_2024_1-100.DOCX')
-    parse_docx('data/papers/2024-Seaweed-NexisUni/NexisUni_Seaweed_2024.DOCX')
-    return
+    #parse_docx('data/papers/2024-Seaweed-NexisUni/NexisUni_Seaweed_2024.DOCX')
+    #return
     docx_path_list = [
         pdf_file_path
         for pdf_file_glob in args.path_to_files
