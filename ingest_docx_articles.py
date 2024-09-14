@@ -6,6 +6,7 @@ import glob
 import time
 import re
 
+import pandas
 from concurrent.futures import as_completed
 from docx import Document
 from concurrent.futures import ProcessPoolExecutor
@@ -135,24 +136,58 @@ def parse_docx(file_path):
         return
 
 
+def parse_rtf(doc_path):
+    pass
+
+
+def parse_csv(csv_path):
+    # Group by item_title, item_pub_date, and item_url
+    df = pandas.read_csv(csv_path)
+    possible_item_titles = ['item_title', 'item_title.x']
+    for item_title in possible_item_titles:
+        if item_title in df.columns:
+            break
+    print(df)
+    grouped = df.groupby([item_title, 'item_pub_date', 'item_url'])
+    print(grouped)
+
+    # Concatenate the 'item_text's into 'body', ignoring NaNs and empty strings
+    df_combined = grouped['item_text'].apply(
+        lambda x: ' '.join(x.dropna().astype(str).str.strip())
+    ).reset_index(name='body')
+
+    # Display the combined DataFrame
+    print("\nCombined DataFrame:")
+    print(df_combined)
+    return
+
+
 def main():
     parser = argparse.ArgumentParser(description='parse docx')
     parser.add_argument('path_to_files', nargs='+', help='Path/wildcard to docx files')
     args = parser.parse_args()
 
+    parse_csv('./data/papers/2024-Seaweed-Regional/Results-SeaweedRegionalSearch2024.csv')
+    return
     #parse_docx('data/papers/2024-Seaweed-NexisUni/NexisUni_Seaweed_2024.DOCX')
     #parse_docx('data/papers/Aquaculture-NexisUni-2024/NexisUni_Aquaculture_2024_1-100.DOCX')
     #parse_docx('data/papers/Aquaculture-NexisUni-2024/NexisUni_Aquaculture_2024_1-100.DOCX')
     #parse_docx('data/papers/2024-Seaweed-NexisUni/NexisUni_Seaweed_2024.DOCX')
     #return
 
-    docx_path_list = [
+    doc_path_list = [
         pdf_file_path
         for pdf_file_glob in args.path_to_files
         for pdf_file_path in Path().rglob(pdf_file_glob)]
 
-    for docx_path in docx_path_list:
-        parse_docx(docx_path)
+    for doc_path in doc_path_list:
+        if doc_path.lower().endswith('.docx'):
+            parse_docx(doc_path)
+        elif doc_path.lower().endswith('.rtf'):
+            parse_rtf(doc_path)
+        elif doc_path.lower().endswith('.csv'):
+            parse_csv(doc_path)
+
     return
 
     init_db()
@@ -160,7 +195,7 @@ def main():
 
     with ProcessPoolExecutor() as executor:
         future_list = []
-        for index, file_path in enumerate(docx_path_list):
+        for index, file_path in enumerate(doc_path_list):
             future = executor.submit(parse_docx, file_path)
             future_list.append(future)
         article_list = []
