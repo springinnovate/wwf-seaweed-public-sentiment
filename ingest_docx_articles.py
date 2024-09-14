@@ -145,6 +145,7 @@ def main():
     #parse_docx('data/papers/Aquaculture-NexisUni-2024/NexisUni_Aquaculture_2024_1-100.DOCX')
     #parse_docx('data/papers/2024-Seaweed-NexisUni/NexisUni_Seaweed_2024.DOCX')
     #return
+
     docx_path_list = [
         pdf_file_path
         for pdf_file_glob in args.path_to_files
