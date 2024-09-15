@@ -1,11 +1,11 @@
 """Tracer code to figure out how to parse out DocX files."""
+import os
 from transformers import pipeline
-from functools import wraps
 import re
 
-from database_model_definitions import Article, AIResultBody, USER_CLASSIFIED_BODY_OPTIONS, RELEVANT_SUBJECT_TO_LABEL, AQUACULTURE_SUBJECT_TO_LABEL, SEAWEED_LABEL, OTHER_AQUACULTURE_LABEL
+from database_model_definitions import Article, AIResultBody, SEAWEED_LABEL, OTHER_AQUACULTURE_LABEL
 from database_model_definitions import RELEVANT_LABEL, IRRELEVANT_LABEL
-from database_model_definitions import RELEVANT_TAG, IRRELEVANT_TAG, SEAWEED_TAG, OTHER_AQUACULTURE_TAG, SEAWEED_RE
+from database_model_definitions import RELEVANT_TAG, IRRELEVANT_TAG, SEAWEED_TAG, OTHER_AQUACULTURE_TAG
 from database import SessionLocal, init_db
 
 
@@ -55,6 +55,14 @@ def make_pipeline(model_type, model_path):
 
 
 def main():
+    not_found = False
+    for model_path in [RELEVANT_SUBJECT_MODEL_PATH, AQUACULTURE_SUBJECT_MODEL_PATH]:
+        if not os.path.exists(model_path):
+            not_found = True
+            print(f'{model_path} not found, you need to download it from wherever Sam uploaded it to, ask her!')
+    if not_found:
+        return
+
     seaweed_re = re.compile('(seaweed|kelp|sea moss)', re.IGNORECASE)
     relevant_subject_model = make_pipeline(
         'text-classification', RELEVANT_SUBJECT_MODEL_PATH)
@@ -73,6 +81,7 @@ def main():
         .all())
     bodies_without_ai = [article.body for article in articles_without_ai]
     print(f'doing sentiment-analysis on {len(bodies_without_ai)} article bodies')
+    return
     relevant_subject_result_list = [
         {
             'label': RELEVANT_LABEL_TO_SUBJECT[val['label']],
