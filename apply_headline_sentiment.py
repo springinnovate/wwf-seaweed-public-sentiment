@@ -1,6 +1,7 @@
 """Tracer code to figure out how to parse out DocX files."""
-from transformers import pipeline
+import os
 
+from transformers import pipeline
 from database_model_definitions import Article, AIResultHeadline
 from database import SessionLocal, init_db
 
@@ -28,6 +29,9 @@ def main():
         .filter(AIResultHeadline.id_key == None)
         .all())
     headlines_without_ai = [article.headline for article in articles_without_ai]
+    if not headlines_without_ai:
+        print('all headlines have been processed')
+        return
 
     print(f'doing sentiment-analysis on {len(headlines_without_ai)} headlines')
     headline_sentiment_result = headline_sentiment_model(headlines_without_ai)
