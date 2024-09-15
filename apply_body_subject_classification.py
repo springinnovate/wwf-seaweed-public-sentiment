@@ -81,7 +81,6 @@ def main():
         .all())
     bodies_without_ai = [article.body for article in articles_without_ai]
     print(f'doing sentiment-analysis on {len(bodies_without_ai)} article bodies')
-    return
     relevant_subject_result_list = [
         {
             'label': RELEVANT_LABEL_TO_SUBJECT[val['label']],
