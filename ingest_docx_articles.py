@@ -1,13 +1,9 @@
 """Tracer code to figure out how to parse out DocX files."""
-import sys
 from pathlib import Path
 import argparse
-import glob
 import time
-import re
 
 import pandas
-from striprtf.striprtf import rtf_to_text
 from concurrent.futures import as_completed
 from docx import Document
 from concurrent.futures import ProcessPoolExecutor
