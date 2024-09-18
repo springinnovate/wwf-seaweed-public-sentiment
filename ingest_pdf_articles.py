@@ -1,9 +1,11 @@
 """Tracer code to figure out how to parse out DocX files."""
-import io
-import concurrent.futures
+from collections import deque
 from pathlib import Path
 import argparse
+import concurrent.futures
+import io
 import re
+import sys
 import time
 
 from pypdf import PdfReader
@@ -13,7 +15,8 @@ from database_model_definitions import Article
 from database_operations import upsert_articles
 from database import SessionLocal, init_db
 
-RE_TEXT = '(.*(?:\n[^\n]+)+)\n\n(\S* \d{1,2}, \d{4}) \| (.*)'
+# match the headline by finding the date
+ACCESS_WORLDNEWS_RE = '(.*(?:\n[^\n]+)+)\n\n(\S* \d{1,2}, \d{4}) \| (.*)'
 
 
 def parse_pdf(file_path):
@@ -42,7 +45,10 @@ def parse_pdf(file_path):
         articles_text += page.extract_text(extraction_mode="layout")+'\n\n'
     body_end_index = len(articles_text)
     new_article_list = []
-    for match in reversed([match for match in re.finditer(RE_TEXT, articles_text)]):
+
+    found_access_world_news = False
+    for match in reversed([match for match in re.finditer(ACCESS_WORLDNEWS_RE, articles_text)]):
+        found_access_world_news = True
         headline_text, date_text, publication_text = match.groups()
         body_text = articles_text[match.span()[1]:body_end_index]
         headline_text = ' '.join(headline_text.split('\n')).strip()
@@ -53,8 +59,55 @@ def parse_pdf(file_path):
             date=date_text,
             publication=publication_text,
             source_file=str(file_path),
-            )
+        )
         new_article_list.append(new_article)
+    if not found_access_world_news:
+        # must be NexisUni style:
+        text_iter = iter(articles_text.splitlines())
+        state = 'outside'
+        for line in text_iter:
+            line = line.strip()
+            if line == '':
+                continue
+            #print(f'{state}: {line}')
+            if state == 'outside':
+                if line == 'End of Document':
+                    state = 'eod'
+            elif state == 'eod':
+                if line == 'Bibliography':
+                    state = 'outside'
+                else:
+                    state = 'title'
+            if state == 'title':
+                headline_text = next(text_iter).strip()
+                #print(f'HEADLINE: {headline_text}')
+                last_2_lines = deque(maxlen=2)
+                while not any(line.startswith(month) for month in ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]):
+                    #print(f'not publication: {line}')
+                    line = next(text_iter).strip()
+                    last_2_lines.append(line)
+                date_text = last_2_lines.pop()
+                publication_text = last_2_lines.pop()
+                #print(f'publication_text: "{publication_text}"')
+                #print(f'date_text: {date_text}')
+                while line != 'Body':
+                    #print(f'not body: {line}')
+                    line = next(text_iter).strip()
+                body_text = ''
+                line = next(text_iter).strip()
+                while line != 'End of Document':
+                    if line != '':
+                        body_text += line
+                    line = next(text_iter).strip()
+                new_article = Article(
+                    headline=headline_text,
+                    body=body_text,
+                    date=date_text,
+                    publication=publication_text,
+                    source_file=str(file_path),
+                )
+                new_article_list.append(new_article)
+                state = 'eod'
     print(f'time to parse {file_path} = {time.time()-start_time:.1f}s')
     return new_article_list
 
