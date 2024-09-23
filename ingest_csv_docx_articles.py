@@ -4,12 +4,12 @@ import argparse
 import time
 
 import pandas
-from concurrent.futures import as_completed
 from docx import Document
-from concurrent.futures import ProcessPoolExecutor
 from database_model_definitions import Article
 from database_operations import upsert_articles
 from database import SessionLocal, init_db
+#from concurrent.futures import as_completed
+#from concurrent.futures import ProcessPoolExecutor
 
 
 def parse_as_bibstyle(orignal_file_path, paragraph_iter):
@@ -192,17 +192,25 @@ def parse_csv(csv_path):
             break
     grouped = df.groupby([item_title, date_field, url_field])
 
+    possible_body_fields = [
+        'paragraph', 'item_text', ]
+    for _body_field in possible_body_fields:
+        if _body_field in df.columns:
+            body_field = _body_field
+            break
+
     # Concatenate the 'item_text's into 'body', ignoring NaNs and empty strings
-    df_combined = grouped['item_text'].apply(
+    df_combined = grouped[body_field].apply(
         lambda x: ' '.join(x.dropna().astype(str).str.strip())
     ).reset_index(name='body')
-    print(df_combined)
+    print(f'{csv_path:}\n\t\t{df_combined}')
+
     article_list = []
     for index, row in df_combined.iterrows():
         new_article = Article(
             headline=row[item_title],
             body=row['body'],
-            date=row['item_pub_date'],
+            date=row[date_field],
             source_file=str(csv_path),
         )
         article_list.append(new_article)
@@ -212,15 +220,18 @@ def parse_csv(csv_path):
 def main():
     parser = argparse.ArgumentParser(description='parse docx')
     parser.add_argument('path_to_files', nargs='+', help='Path/wildcard to docx/csv files')
+    parser.add_argument('--test', action='store_true')
     args = parser.parse_args()
 
+    doc_path_list = [
+        file_path
+        for file_glob in args.path_to_files
+        for file_path in Path().rglob(file_glob)]
+    if args.test:
+        print(doc_path_list)
+        return
     init_db()
     db = SessionLocal()
-    doc_path_list = [
-        pdf_file_path
-        for pdf_file_glob in args.path_to_files
-        for pdf_file_path in Path().rglob(pdf_file_glob)]
-
     article_list = []
     for doc_path in doc_path_list:
         if str(doc_path).lower().endswith('.docx'):
