@@ -167,11 +167,30 @@ def parse_docx(file_path):
 def parse_csv(csv_path):
     # Group by item_title, item_pub_date, and item_url
     df = pandas.read_csv(csv_path)
-    possible_item_titles = ['item_title', 'item_title.x']
-    for item_title in possible_item_titles:
-        if item_title in df.columns:
+    possible_item_titles = [
+        'title',
+        'item_title',
+        'item_title.x']
+    for _item_title in possible_item_titles:
+        if _item_title in df.columns:
+            item_title = _item_title
             break
-    grouped = df.groupby([item_title, 'item_pub_date', 'item_url'])
+    possible_date_fields = [
+        'item_pub_date',
+        'archive_date',
+    ]
+    for _date_field in possible_date_fields:
+        if _date_field in df.columns:
+            date_field = _date_field
+            break
+    possible_url_fields = [
+        'url', 'item_url',
+    ]
+    for _url_field in possible_url_fields:
+        if _url_field in df.columns:
+            url_field = _url_field
+            break
+    grouped = df.groupby([item_title, date_field, url_field])
 
     # Concatenate the 'item_text's into 'body', ignoring NaNs and empty strings
     df_combined = grouped['item_text'].apply(
@@ -192,29 +211,14 @@ def parse_csv(csv_path):
 
 def main():
     parser = argparse.ArgumentParser(description='parse docx')
-    #parser.add_argument('path_to_files', nargs='+', help='Path/wildcard to docx files')
+    parser.add_argument('path_to_files', nargs='+', help='Path/wildcard to docx/csv files')
     args = parser.parse_args()
-
-    path_to_files = [
-        "data/papers/Aquaculture-Regional-2024/*.docx",
-        "data/papers/2024-Seaweed-AccessWorldNews/*.docx",
-        "data/papers/2024-Seaweed-NexisUni/*.docx",
-        "data/papers/2024-Seaweed-Regional/*.docx",
-        "data/papers/Aquaculture-AccessWorldNews-2024/*.docx",
-        "data/papers/Aquaculture-NexisUni-2024/*.docx",
-        "data/papers/Aquaculture-Regional-2024/*.docx",
-        "data/papers/2024-Seaweed-AccessWorldNews/*.csv",
-        "data/papers/2024-Seaweed-NexisUni/*.csv",
-        "data/papers/2024-Seaweed-Regional/*.csv",
-        "data/papers/Aquaculture-AccessWorldNews-2024/*.csv",
-        "data/papers/Aquaculture-NexisUni-2024/*.csv",
-    ]
 
     init_db()
     db = SessionLocal()
     doc_path_list = [
         pdf_file_path
-        for pdf_file_glob in path_to_files  # args.path_to_files
+        for pdf_file_glob in args.path_to_files
         for pdf_file_path in Path().rglob(pdf_file_glob)]
 
     article_list = []
@@ -230,23 +234,20 @@ def main():
     db.commit()
     db.close()
 
-    return
+    # with ProcessPoolExecutor() as executor:
+    #     future_list = []
+    #     for index, file_path in enumerate(doc_path_list):
+    #         future = executor.submit(parse_docx, file_path)
+    #         future_list.append(future)
+    #     article_list = []
+    #     for future in as_completed(future_list):
+    #         article_list.extend(future.result())
+    #     article_list = [future.result() for future in future_list]
+    # print(f'upserting {len(article_list)} articles')
+    # upsert_articles(db, article_list)
 
-
-    with ProcessPoolExecutor() as executor:
-        future_list = []
-        for index, file_path in enumerate(doc_path_list):
-            future = executor.submit(parse_docx, file_path)
-            future_list.append(future)
-        article_list = []
-        for future in as_completed(future_list):
-            article_list.extend(future.result())
-        article_list = [future.result() for future in future_list]
-    print(f'upserting {len(article_list)} articles')
-    upsert_articles(db, article_list)
-
-    db.commit()
-    db.close()
+    # db.commit()
+    # db.close()
 
 
 if __name__ == '__main__':

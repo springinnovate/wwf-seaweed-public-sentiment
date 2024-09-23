@@ -7,7 +7,7 @@
  *   % positive, negative, neutral sentiment for seaweed aquaculture –
         *  global, then broken out by maine, new Hampshire, Massachusetts, Alaska, Washington, Oregon, California
 """
-import datetime
+from datetime import datetime
 from collections import defaultdict
 
 from database import SessionLocal
@@ -112,7 +112,7 @@ def main():
 
     timestamp = datetime.now().strftime('%Y_%m_%d_%H_%M')
     filename = f'aquaculture_media_report_{timestamp}.csv'
-    with open('aquaculture_media_report_2024.csv', 'w', newline='') as f:
+    with open(filename, 'w', newline='') as f:
         f.write(output)
 
 
